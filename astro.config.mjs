@@ -1,4 +1,4 @@
-import { defineConfig } from 'astro/config'
+import { defineConfig, squooshImageService } from 'astro/config'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import tailwind from '@astrojs/tailwind'
@@ -21,13 +21,16 @@ export default defineConfig({
 			shikiConfig: {
 				experimentalThemes: {
 					light: 'vitesse-light',
-					dark: 'material-theme-palenight',
-				  },
+					dark: 'material-theme-palenight'
+				},
 				wrap: true
 			},
 			drafts: true
 		}),
 		sitemap(),
 		tailwind()
-	]
+	],
+	image: {
+		service: squooshImageService()
+	}
 })

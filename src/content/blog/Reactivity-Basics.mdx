@@ -1,0 +1,129 @@
+---
+heroImage: /src/assets/images/vue-js-logo-1.jpg
+chapter: Chapter 1
+description: explore the basics of reactivity in Vue Js
+pubDate: 2024-07-26T05:00:00.000Z
+tags:
+  - reactivity
+  - basics
+title: Reactivity Basics
+---
+
+## Introducing ref()
+
+Using Vue’s Composition API interface, we are given two functions to help manage state - `ref()` and `reactive()`.
+
+`ref()` is used to create a reactive reference to a single variable, like a string or a number. The `ref()` function takes an argument, usually a primitive type, and returns it wrapped in an object with a .value property. In the script portion of a component, we have to use the .value property to access our ref, while in the template portion of a component, we can directly access our ref without .value, (this is only true if you pass ref a primitive, if it is passed an object you would have to use standard object dot notation to access the value in the template)
+
+## Mutating refs
+
+We can mutate refs in the template directly in event handlers, or by declaring more complex functions in the same \<script setup> tag (same scope) as our ref, which are then exposed as methods inside the template, where they can then be used inside of event handlers (more on this later).
+
+## Using reactive()
+
+reactive() is used to create a reactive object that can contain multiple properties, like form data. reactive() takes an object as its argument, and Vue is then able to access and mutate all the properties of your reactive object.
+
+Declaring state with reactive() is a little different than using ref(). Some rules to remember when using reactive are: 1) reactive() cannot be used with primitive types, only objects, arrays, as well as Map and Set; 2)Re-assigning state declared with reactive() will result in losing the connection to the original ref (the flow here being to copy previous state into a new object, so your connection to your data is not lost); 3) reactive() is not compatible with object destructuring.
+
+## Vue Behind the Scenes
+
+In Vue, data that is defined reactively, using either ref() or reactive(), gets merged into one global object- the same object will also contain any methods we have defined in our script tag.  Vue turns your data object into a reactive data object by essentially wrapping your properties with a JavaScript feature called proxies. In JavaScript, there is a built-in feature called a proxy, which Vue uses under the hood to wrap your reactive state to keep track of whenever your state changes and updates your app accordingly.
+
+To understand how Vue uses this reactivity, let's take a step back and use some vanilla JavaScript to explore what a proxy is and how it works.
+
+This is a regular JavaScript variable, no Vue js used:
+
+```javascript
+let message = 'Hello'
+```
+
+Now if we create another variable and assign it to our message variable plus another string...
+
+```javascript
+let updatedMessage = message + ' World!'
+```
+
+We can log updatedMessage to the screen and get what we’d expect:
+
+```javascript
+console.log(updatedMessage) //"Hello World!"
+```
+
+But now if we change the message, and console.log updatedMessage again:
+
+```javascript
+let message = 'Hello'
+let updatedMessage = message + ' World!'
+console.log(updatedMessage) //"Hello World!"
+message = 'Goodbye'
+console.log(updatedMessage) //"Hello World!"
+```
+
+We get the same thing, "Hello World!"
+
+![](/src/assets/images/vue-behind-the-sceens-1.PNG)
+
+We don’t get “Goodbye World!” because JavaScript by default is not reactive. This is where Vue comes in. Vue has a built-in mechanism that tracks when our reactive variables change so that the parts of our app where we are rendering reactive state are updated when this state changes. Vue uses JavaScript proxies to accomplish this.
+
+## Proxies Crash Course
+
+So how do proxies work? Let's explore another example with plain old vanilla JavaScript. Lets first create our initial message, but as an object his time:
+
+```javascript
+const data = {
+	message: 'Hello'
+}
+```
+
+Now we can wrap this object with a proxy by using the Proxy constructor function, which is built into JavaScript, and create a new proxy. The Proxy constructor takes two arguments, the reference to our data, and a second object full of handlers for the first argument.
+
+This handler object can now be used to set up ‘traps’ - called ‘traps’ because they trap calls to the target object.  You do this by adding a set function in the handler and as an argument, you will automatically receive a target, a key, and a value. Now to get an idea of what this does let's console.log target key and value, and pass our handler as the second argument to our proxy. The proxy will wrap the first argument - data -, so we can access message just like we can with our original data variable. Not only can we access it, but we can update it too
+
+```javascript
+const handler = {
+	set(target, key, value) {
+		console.log(target)
+		console.log(key)
+		console.log(value)
+	}
+}
+
+const proxy = new Proxy(data, handler)
+
+proxy.message = 'Goodbye!'
+```
+
+Now when we save and reload, what you should see are three console.log messages from the handler: the first one, the target, is essentially the object that was wrapped; the second one, the key, is the property that you just updated; and the third one, the value, is the value that was set.
+
+![](/src/assets/images/vue-behind-the-sceens-2.PNG)
+
+From this example, we can see that the setter function inside of the handler is triggered whenever a property is set on our proxy.
+
+Now, if we were to add another property to our data, and we wanted to make it so that updatedMessage changed when message changed, by using our proxy and the handler which we set up, we can easily implement this. We can check if the key we are setting is ‘message’, and if it is, we want to target our updatedMessage property and set it equal to the new value we assigned for message, plus “World”. If we make sure to console.log proxy.updatedMessage, we can observe that updatedMessage is updated to the same value we set message to:
+
+```javascript
+const data = {
+	message: 'Hello!',
+	updatedMessage: ''
+}
+
+const handler = {
+	set(target, key, value) {
+		if (key === 'message') {
+			target.updatedMessage = value + ' World!'
+		}
+	}
+}
+
+const proxy = new Proxy(data, handler)
+
+proxy.message = 'Goodbye!'
+
+console.log(proxy.updatedMessage)
+```
+
+![](/src/assets/images/vue-behind-the-sceens-4.PNG)
+
+So here we built our own reactive system for tracking one message, and updating updatedMessage when we changed the message property. This is essentially a very simplified version of what Vue does under the hood. It keeps track of all of your data properties, via proxies, and whenever a property changes, it updates the part of our app where we are using that property.
+
+That's it for reactivity basics, next up [Template Syntax and Computed Properties](/post/template-syntax-and-computed-properties/)
