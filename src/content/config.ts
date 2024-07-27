@@ -1,5 +1,5 @@
 import { defineCollection, z } from 'astro:content'
-import { CATEGORIES } from '@/data/categories'
+import { CHAPTERS } from '@/data/chapters'
 
 const blog = defineCollection({
 	// Type-check frontmatter using a schema
@@ -13,7 +13,7 @@ const blog = defineCollection({
 				.or(z.date())
 				.transform((val) => new Date(val)),
 			heroImage: image(),
-			category: z.enum(CATEGORIES),
+			chapter: z.enum(CHAPTERS),
 			tags: z.array(z.string()),
 			draft: z.boolean().default(false)
 		})

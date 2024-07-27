@@ -1,4 +1,4 @@
-import { CATEGORIES } from '../src/data/categories.ts'
+import { CHAPTERS } from '../src/data/chapters.ts'
 import { defineConfig } from 'tinacms'
 
 // Your hosting provider likely exposes this as an environment variable
@@ -6,8 +6,8 @@ const branch = process.env.HEAD || process.env.VERCEL_GIT_COMMIT_REF || 'main'
 
 export default defineConfig({
 	branch,
-	clientId: null, // Get this from tina.io
-	token: null, // Get this from tina.io
+	clientId: '1737bf72-b818-47d3-af7b-4d87638fe4eb', // Get this from tina.io
+	token: '110d1ec853f6af93a993787eb2f86d12889fb46a', // Get this from tina.io
 
 	build: {
 		outputFolder: 'admin',
@@ -38,10 +38,10 @@ export default defineConfig({
 					{
 						type: 'string',
 						required: true,
-						name: 'category',
-						label: 'Category',
+						name: 'chapter',
+						label: 'Chapter',
 						description: 'Select an category for this post',
-						options: [...CATEGORIES]
+						options: [...CHAPTERS]
 					},
 					{
 						type: 'string',

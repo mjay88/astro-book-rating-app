@@ -11,15 +11,15 @@ export async function getStaticPaths({ paginate }: any) {
 	const categories = await getCategories()
 	const allPosts = await getPosts()
 
-	return categories.flatMap((category: string) => {
-		const unsluglifyNameCategory = unsluglify(category!.toLowerCase())
+	return categories.flatMap((chapter: string) => {
+		const unsluglifyNameCategory = unsluglify(chapter!.toLowerCase())
 		const filteredPosts = allPosts.filter(
-			(post) => post.data.category.toLowerCase() === unsluglifyNameCategory
+			(post) => post.data.chapter.toLowerCase() === unsluglifyNameCategory
 		)
 
 		return paginate(filteredPosts, {
 			params: {
-				category: sluglify(category.toLowerCase())
+				chapter: sluglify(chapter.toLowerCase())
 			},
 			pageSize: siteConfig.paginationSize
 		})
@@ -28,13 +28,13 @@ export async function getStaticPaths({ paginate }: any) {
 const params = Astro.params
 const { page } = Astro.props
 
-const unsluglifyNameCategory = unsluglify(params.category!.toLowerCase())
+const unsluglifyNameCategory = unsluglify(params.chapter!.toLowerCase())
 const posts = page.data
 ---
 
-<BaseLayout title={params.category}>
+<BaseLayout title={params.chapter}>
 	<TitlePage title={unsluglifyNameCategory} />
-	<ListCategories activeCategory={params.category} />
+	<ListCategories activeCategory={params.chapter} />
 	<ListPosts posts={posts} />
 	<Pagination page={page} />
 </BaseLayout>
