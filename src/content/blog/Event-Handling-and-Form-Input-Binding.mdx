@@ -1,0 +1,51 @@
+---
+heroImage: /src/assets/images/vue-js-logo-1.jpg
+chapter: Chapter 1
+description: Event Handling and Form Input Binding
+pubDate: 2024-07-27T05:00:00.000Z
+tags:
+  - forms
+  - basics
+  - events
+title: Event Handling and Form Input Binding
+---
+
+Event Handling
+
+Vue leverages JavaScript’s built-in ability to listen to DOM events and makes it simple to respond to all types of user input. We can use the v-on directive to listen to DOM events and trigger a handler function. This is such a common task v-on has its very own short-hand, the @ symbol.
+
+The handler function can be written inline, or you can define a method in your \<script setup> tag and pass it to v-on. Inline handlers are great for performing simple tasks, while method handlers are better suited to hold more complex logic. A method handler automatically receives the native DOM event object as an argument.
+
+You can either bind a method directly, or you can call methods in an inline handler, allowing you to pass the method a dynamic argument. If you need to pass an argument to your bound method and also access the DOM event, you can pass it to your method using the special $event variable syntax.
+
+Vue also gives you the ability to use event modifiers for common scenarios. By postfixing a modifier after the handler passed to v-on, you can shorten the amount of code needed in your method.
+
+(example from code)
+
+With the v-on directive, we can respond to every event that vanilla JavaScript can.
+
+## Form Input Bindings
+
+Vue makes it easy to wire up a two-way binding between our managed state and a form input element, with the help of the v-model directive.
+
+A typical frontend value binding flow:
+
+```javascript
+<input
+  :value="text"
+  @input="event => text = event.target.value">
+```
+
+With Vue’s v-model:
+
+```javascript
+<input v-model="text">
+
+```
+
+V-model also accepts modifiers, similar to v-on. To convert a string to a number, you can add the number modifier, and .trim is also a handy modifier to remove additional whitespace from your user input:
+
+```javascript
+<input v-model.number="age" />
+<input v-model.trim="msg" />
+```
