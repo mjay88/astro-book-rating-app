@@ -18,9 +18,21 @@ The handler function can be written inline, or you can define a method in your \
 
 You can either bind a method directly, or you can call methods in an inline handler, allowing you to pass the method a dynamic argument. If you need to pass an argument to your bound method and also access the DOM event, you can pass it to your method using the special $event variable syntax.
 
-Vue also gives you the ability to use event modifiers for common scenarios. By postfixing a modifier after the handler passed to v-on, you can shorten the amount of code needed in your method.
+Vue also gives you the ability to use event modifiers for common scenarios. By postfixing a modifier after the handler passed to v-on, you can shorten the amount of code needed in your method. In the example below we add the .prevent modifier to the form submission event, which is equivalent to event.preventDefault() in JavaScript.
 
-(example from code)
+```javascript
+<script setup>
+const handleFormSubmission = () => {
+  //...logic for handling data coming from our form
+};
+</script>
+<template>
+  <form @submit.prevent="handleFormSubmission">
+    //...rest of form
+    <button type="submit">Save</button>
+  </form>
+</template>
+```
 
 With the v-on directive, we can respond to every event that vanilla JavaScript can.
 
@@ -49,3 +61,5 @@ V-model also accepts modifiers, similar to v-on. To convert a string to a number
 <input v-model.number="age" />
 <input v-model.trim="msg" />
 ```
+
+Alright, I think we know enough to finally start coding! Let’s start building our book rating app based on what we’ve learned so far. You can go to the next lesson [here](/post/chapter-1-code/ 'Chapter 1 Code').

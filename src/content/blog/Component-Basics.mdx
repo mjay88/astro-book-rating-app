@@ -1,0 +1,342 @@
+---
+heroImage: /src/assets/images/vue-js-logo-1.jpg
+chapter: Chapter 2
+description: Component Basics
+pubDate: 2024-07-31T05:00:00.000Z
+tags:
+  - components
+  - basics
+title: Component Basics
+---
+
+## Introducing Components
+
+Components are blocks of logic, HTML markdown, and style, all bundled together into reusable parts of websites or apps. In our app, the card-like structure used to render each book could be a component, the button to open the form could be a component, and the form itself could be a component.
+
+![](/src/assets/images/vue-book-app-components-diagram.png)
+
+We could further optimize these components and break them down into even smaller pieces: the card body could be it’s own component that lives inside of the card component, the title of our button could be extracted into its own component, and each input field in our form could be a custom component as well.
+
+Think of a component like a function. A function should be composed to handle a specific bit of logic. When we find ourselves adding more complexity to the same function, it’s typically best practice to break each bit of logic out into its own function. This helps keep our code DRY, organized, and readable.
+
+## Our First Component
+
+We write our components in their own .vue files, and our code is organized into three different sections: JavaScript, in the \<script setup> tag; HTML, in the \<template> tag; and CSS, in the style tag (we are using Tailwind for our CSS so we aren’t using the style tag). So far our app uses the the SFC format - which we saw referenced in the previous chapter - but it’s a bit messy. We have a lot of different sections of our app all defined in a single file. This is not the Vue way.
+
+Let us break our button into its own component as an example.
+
+Let's create a new file called, BaseButton.vue. The goal of this component will be a reusable button that has the basic layout we want but with customizable content, styles, or attributes.
+
+Let’s add our \<script setup> tag and our \<template> tag, and copy and paste our ‘Add A Book’ button over from App.vue.
+
+```javascript
+<script setup></script>
+<template>
+	<button
+		class="absolute left-5 top-5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+		@click="openModal"
+	>
+		Add A Book
+	</button>
+</template >
+```
+
+This button won’t be very reusable if it’s always labeled ‘Add A Book’, so Vue has a way of passing custom content to a component.
+
+## Registering Components
+
+## Props
+
+You can think of props as function parameters but for our component. Props allow us to register a parameter for our component, which we can then use to pass some custom information to our component later, like our button label:
+
+```javascript
+function Button(label) {
+	return `
+          <button>
+            ${label}
+          </button>
+          `
+}
+
+Button('Click Me!')
+```
+
+You define a prop using the defineProps API, which is automatically available inside our \<script setup> tag.
+
+```javascript
+//BaseButton.vue
+<script setup>
+defineProps(["label"])
+</script>
+<template>
+	<button
+		class="tailwind classess..."
+		@click="openModal"
+	>
+		{{ label }}
+	</button>
+</template >
+
+```
+
+You can pass defineProps as an array of strings like above, but it is recommended to define them as an object with validation requirements, to help limit bugs especially when working on a team. We can do this by using the object syntax. For each prop, the key is the name of the prop, and the value should be an additional object specifying the validation requirements, which can include the expected type or types of the prop, a required field, and a default field.
+
+```javascript
+<script setup>
+  import {computed} from "vue";
+  const props = defineProps({
+    label: {
+    type: String,
+    required: false,//this is the default value and is not needed unless required:true
+    default: "Click Me!"
+	},
+
+});
+</script>
+```
+
+If we ever need to access our props in our \<script setup> tag, defineProps returns an object we can assign to a constant, and then we can access it using dot notation:
+
+```javascript
+//BaseButton.vue
+<script setup>const props = defineProps(["label"]) console.log(props.label)</script>
+```
+
+We then register our component by importing it into App.vue, and then we can replace our old button with \<BaseButton /> our template, passing the desired value to the label prop:
+
+```javascript
+//App.vue
+<template>
+  <div class="relative bg-white h-screen">
+    <BaseButton
+    label="Add A Book"
+    />
+    //...rest of template
+</template>
+```
+
+## Components and Events
+
+What if we want clicking on our button component to do something? To handle this, components come with the built-in ability to handle custom events. In our  BaseButton component we can emit events to the parent using the defineEmits API. It's similar to defineProps, but for registering events. We define our event inside of defineEmits in the child, and then we can use the v-on directive, or @ for short, in the template, to wire up our emits with a native event, in this case click.
+
+```javascript
+<script setup>
+defineProps(["label"]);
+defineEmits(["handleClick"]);
+</script>
+<template>
+	<button
+		class="...tailwind classes"
+		@click="$emit('handleClick')"
+	>
+		{{ label }}
+	</button>
+</template >
+```
+
+In the parent, App.vue, we can listen for any event on our BaseButton component with @, and pass logic to be executed in line or point it at a method:
+
+```javascript
+//App.vue
+<template>
+  <div class="relative bg-white h-screen">
+  <BaseButton
+  label="Add A Book"
+  @handleClick="openModal"
+  />
+//...rest of template
+</template>
+```
+
+Here we pass our emitted event the openModal method, which will open the form executed.
+
+## Slots
+
+Sometimes we might want to nest HTML or other content inside of our component, like this:
+
+```javascript
+<button
+	@click="removeBook(bookIndex)"
+  >
+  <TrashIcon
+    class="h-8 w-8"
+  />
+</button >
+```
+
+We can do this by using Vue’s custom \<slot /> element. Similar to a prop but a bit more flexible, a \<slot/> acts as a placeholder for where we want our content to go in relation to the markup for our component. In fact, we can achieve the same functionality that we did with our label prop using slots:
+
+```javascript
+<script setup>
+// defineProps(["label"]);
+defineEmits(["handleClick"]);
+</script>
+<template>
+	<button
+		class="tailwind classes"
+		@click="$emit('handleClick')"
+	>
+		<slot></slot>
+	</button>
+</template >
+```
+
+And in App.vue:
+
+```javascript
+<template>
+  <div class="relative bg-white h-screen">
+  <BaseButton
+  @handleClick="openModal"
+  >
+  Add A Book
+  </BaseButton>
+//...rest of template
+</template>
+```
+
+This achieves the same result as using a prop to pass our button text into our component.
+
+Sometimes you might want to use multiple slots. Vue allows you to customize the order of your content using named slots. To make sure our content renders where we want it to, \<slot> element comes with a special ‘name’ attribute. We provide the name attribute with an ID to differentiate our multiple slots.
+
+Then, in our parent component, we use a \<template> element with the v-slot directive and pass the name of the slot as an argument. The v-slot directive has it’s own nice shorthand, the ‘#’ symbol.  Let's add a slot for an icon to our BaseButton, in this example, we are still using a slot to pass our label to the button, and then we're using another named slot to pass in an icon. You can leave the name attribute off of one slot, and it will become the ‘default slot’ in the parent, which doesn't require the \<template> element.
+
+```javascript
+//BaseButton.vue
+<script setup>
+// defineProps(["label"]);
+defineEmits(["handleClick"]);
+</script>
+<template>
+	<button
+		class="tailwind classes"
+		@click="$emit('handleClick')"
+	>
+		<slot></slot>
+    <slot name="icon"></slot>
+	</button>
+</template>
+```
+
+And in App.vue
+
+```javascript
+<template>
+  <div class="relative bg-white h-screen">
+    <BaseButton
+  @handleClick="openModal"
+  >
+    Add A Book
+    <template #icon>
+      <PlusIcon class="h-4 w-4" />
+    </template>
+  </BaseButton>
+//...rest of template
+</template>
+```
+
+## Optimizing our BaseButton.vue Component
+
+In the below example, I've reverted back to passing the button label via a prop, and added a few more props plus some prop validation to help fully customize our button component. We will set the button type attribute with the type prop and control the styles with the mode prop. I've used a computed property to add the appropriate classes based on the value of the mode prop. I'm also using two slots, one named and one default. The named slot is used if we want to add an icon to any of our primary buttons - I'm adding a plus icon to our 'Add A Book' -, and the default slot is used if we are using the button as a wrapper for an icon, like in the case for our TrashIcon.
+
+```javascript
+//BaseButton.vue
+<script setup>
+import { computed } from "vue";
+const props = defineProps({
+	label: {
+		type: String,
+		default: null,
+	},
+	type: {
+		type: String,
+		required: true,
+	},
+	mode: {
+		type: String,
+		required: true,
+	},
+});
+defineEmits(["handleClick"]);
+
+const styles = computed(() => {
+	const baseClasses =
+		"flex items-center justify-between rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+	const modeClasses = {
+		primary:
+			"bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline-indigo-600",
+		secondary: "text-gray-900",
+		auxillary: "",
+	};
+	return `${baseClasses} ${modeClasses[props.mode]}`;
+});
+</script>
+<template>
+	<button
+		:type="type"
+		:class="styles"
+		class="flex items-center justify-between"
+		@click="$emit('handleClick')"
+	>
+		{{ label }}
+		<div class="ml-1">
+			<slot name="icon"></slot>
+		</div>
+		<slot></slot>
+	</button>
+</template >
+
+```
+
+And in App.vue
+
+```javascript
+<template>
+  <div class="relative bg-white h-screen">
+    <BaseButton
+			@handleClick="openModal"
+    class="absolute left-5 top-5"
+    label="Add A Book"
+    mode="primary"
+    type="button"
+		>
+    <template #icon>
+      <PlusIcon class="h-4 w-4" />
+    </template>
+  </BaseButton>
+  //...rest of template
+  <form>
+  //...rest of form
+  <div class="mt-6 flex items-center justify-end gap-x-6">
+    <BaseButton
+      type="button"
+			@handleClick="closeModal"
+      label="Cancel"
+      mode="secondary"
+										>
+  </BaseButton>
+  <BaseButton type="submit" label="Submit" mode="primary">
+    <template #icon>
+      <DocumentArrowDownIcon class="w-4 h-4" />
+    </template>
+  </BaseButton>
+</div>
+</form >
+  //...rest of template
+  <BaseButton
+		@handleClick="removeBook(bookIndex)"
+    class="absolute right-1"
+    type = "button"
+    mode = "auxillary"
+  >
+    <TrashIcon class="hover:text-slate-600" />
+	</BaseButton >
+  //...rest of template
+</template>
+```
+
+By using, props, emits, and slots we have created a highly reusable and flexible custom button component.
+
+Keep in mind, slots are not better than props. Both features have pros and cons, it all depends on your use case. Slots are mostly reserved for when you need to pass HTML content into your components, like our TrashIcon in the example above, and when you just need to pass data to our component, props are an excellent choice.
+
+Up next, [Lifecycle Hooks!](/post/the-vue-lifecycle-and-lifecycle-hooks/ 'Lifecycle Hooks')

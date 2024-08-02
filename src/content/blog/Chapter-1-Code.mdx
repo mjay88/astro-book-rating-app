@@ -1,0 +1,493 @@
+---
+heroImage: /src/assets/images/vue-book-app-preview.PNG
+chapter: Chapter 1
+description: The first rendition of our book rating app
+pubDate: 2024-07-30T05:00:00.000Z
+tags:
+  - code
+  - basics
+title: 'Chapter 1: Coding Our App'
+---
+
+## What we will be building
+
+The full code for this section is available [here](https://github.com/mjay88/vue-book-rating-app/tree/chapter1 'https://github.com/mjay88/vue-book-rating-app/tree/chapter1').
+
+Our book app will be pretty basic to start. We will have our books rendered as list of cards, displaying the book cover, the title, and the author. We will have an interactive star rating element that starts at zero but which we can change by clicking on one of five stars. If a book is rated, its rating will also appear in the top right corner of the cover. There will also be button to remove a book from our collection.
+
+Additionally, we will have an Add A Book button. Clicking the button will open a form, with title, author, image, and rating fields. We will add some very basic form validation that will require the first three fields to not be empty. Submitting a valid form will append our new book to the end of our books list.
+
+## Bootstrap our Vue App
+
+We will be bootstrapping our app with Vite and using Tailwind for the styling. Open your text editor, and navigate to where you want your app to live.
+
+Since we know we want to use Tailwind, there’s a specific command we can run to make the setup a breeze, just make sure to follow this [guide](https://tailwindcss.com/docs/guides/vite#vue 'Install Tailwind CSS with Vite'), and you can read more about setting up Vue apps in general [here](https://vuejs.org/guide/quick-start.html 'Vue Quick Start').
+
+After you’ve set up your application, install the rest of the dependencies we will be using:
+
+```javascript
+npm install @headlessui/vue @tailwindcss/forms @tailwindcss/aspect-ratio prettier-plugin-tailwindcss
+```
+
+You'll have to update your taiwlind.config.js file too:
+
+```javascript
+plugins: [
+	'prettier-plugin-tailwindcss',
+	require('@tailwindcss/aspect-ratio'),
+	require('@tailwindcss/forms')
+]
+```
+
+Vue files are structured to leverage the framework’s declarative rendering, which is one of the features that make it simple and intuitive to reflect your state in the HTML markup. A standard Vue file will be separated into three parts: the script tag, which manages your imports and holds your state and logic; the template tag, which provides the page’s HTML structure; and the style tag, where we write our CSS. The style tag comes with a scoped attribute, which will keep our styles local to this specific file.
+
+```javascript
+<script setup>
+import {ref} from 'vue'
+const message = ref("Hello World")
+</script>
+
+<template>
+  <h1>{{message}}!!!</h1>
+</template >
+
+  <style scoped>
+    h1 {
+      color: red,
+}
+  </style>
+
+```
+
+To get started let's remove everything from our boilerplate template so we just have an empty file in App.vue with just our \<script setup> tag and our \<template> tag.
+
+```javascript
+<script setup>
+//imports, state, logic
+</script>
+
+<template>
+//HTML
+</template >
+```
+
+## Add our imports
+
+Lets start by adding all of our imports to our script tag:
+
+```javascript
+<script setup>
+  import {ref, reactive} from "vue";
+  import {items} from "./books.json";
+
+  import {StarIcon} from "@heroicons/vue/20/solid";
+  import {TrashIcon} from "@heroicons/vue/24/outline";
+  import {
+    Dialog,
+    DialogPanel,
+    DialogTitle,
+    TransitionChild,
+    TransitionRoot,
+} from "@headlessui/vue";
+</script>
+```
+
+## Add our state
+
+Then let's add the state we will need:
+
+```javascript
+<script setup>
+//...imports
+  const books = ref(items);
+
+  const errors = reactive({
+    title: null,
+  author: null,
+  image: null,
+  rating: null,
+});
+
+  const formData = reactive({
+  id: null,
+  title: null,
+  author: null,
+  image: null,
+  rating: null,
+});
+
+  const validations = reactive({
+  title: "required",
+  author: "required",
+  image: "required",
+});
+</script>
+```
+
+## Add our methods
+
+Next, add all of our methods:
+
+```javascript
+<script setup>
+//...imports
+//...methods
+const validationRules = (rule) => {
+  if (rule === "required") return /^ *$/;
+  return null;
+};
+
+const validate = () => {
+  let valid = true;
+  clearErrors();
+  for (const [field, rule] of Object.entries(validations)) {
+    const validation = validationRules(rule);
+    if (validation) {
+      if (validation.test(formData[field] || "")) {
+        errors[field] = `${field} is ${rule}`;
+        valid = false;
+      }
+    }
+  }
+  return valid;
+}
+const clearErrors = () => {
+  errors.title = null;
+  errors.author = null;
+  errors.image = null;
+  errors.rating = null;
+};
+
+const isModalOpen = ref(false);
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  resetForm();
+};
+
+const openModal = () => {
+  isModalOpen.value = true;
+};
+
+const resetForm = () => {
+  formData.title = null;
+  formData.author = null;
+  formData.image = null;
+  formData.rating = null;
+  formData.id = null;
+};
+
+const handleFormSubmission = () => {
+  if (validate()) {
+    const newBook = { ...formData, id: Number(Date.now()) };
+    books.value.push(newBook);
+    closeModal();
+  }
+};
+
+
+const handleChangeRating = (bookIndex, newRating) => {
+  books.value[bookIndex].rating = newRating;
+};
+
+const removeBook = (bookIndex) => {
+  books.value = books.value.filter((book, bookIdx) => bookIndex !== bookIdx);
+};
+</script>
+```
+
+## Add our template
+
+And then add our structure to our template tag:
+
+```javascript
+<template>
+  <div class="relative bg-white h-screen">
+    <button
+      class="absolute left-5 top-5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+			@click="openModal"
+		>
+    Add A Book
+  </button>
+  <TransitionRoot as="template" :show="isModalOpen">
+  <Dialog class="relative z-10" @close="isModalOpen = false">
+  <TransitionChild
+    as="template"
+    enter="ease-out duration-300"
+    enter-from="opacity-0"
+    enter-to="opacity-100"
+    leave="ease-in duration-200"
+    leave-from="opacity-100"
+    leave-to="opacity-0"
+  >
+    <div
+      class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+    />
+  </TransitionChild>
+
+  <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+    <div
+      class="flex min-h-full items-start justify-center p-4 text-center sm:items-center sm:p-0"
+    >
+      <TransitionChild
+        as="template"
+        enter="ease-out duration-300"
+        enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        enter-to="opacity-100 translate-y-0 sm:scale-100"
+        leave="ease-in duration-200"
+        leave-from="opacity-100 translate-y-0 sm:scale-100"
+        leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+      >
+      <DialogPanel
+      class ="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all my-8 w-full max-w-md p-6"
+      >
+      <div class ="mt-3 text-center sm:mt-5">
+      <DialogTitle
+      as="h3"
+      class ="text-base font-semibold leading-6 text-gray-900"
+      >Add A New Book</DialogTitle
+      >
+      </div>
+      <form @submit.prevent="handleFormSubmission">
+      <div class ="space-y-12">
+      <div class ="border-b border-gray-900/10 pb-12">
+      <div
+      class ="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6"
+      >
+      <div class ="sm:col-span-6">
+      <label
+      for="title"
+      class ="block text-sm font-medium leading-6 text-gray-900"
+      >Title</label
+      >
+      <div class ="mt-1">
+      <div
+      class ="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md"
+      >
+      <input
+      type ="text"
+      name="title"
+      id="title"
+      v-model="formData.title"
+      autocomplete="title"
+      class ="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+      placeholder="A Tale of Two Cities"
+      />
+      </div>
+      <p
+      v-if="errors.title != null"
+      class ="text-red-500 text-sm"
+      >
+      This is a required field
+      </p>
+      </div>
+      </div>
+      <div class ="sm:col-span-6">
+      <label
+      for="author"
+      class ="block text-sm font-medium leading-6 text-gray-900"
+      >Title</label
+      >
+      <div class ="mt-1">
+      <div
+      class ="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md"
+      >
+      <input
+      type ="text"
+      name="author"
+      id="author"
+      v-model="formData.author"
+      autocomplete="author"
+      class ="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+      placeholder="Charles Dickens"
+      />
+      </div>
+      <p
+      v-if="errors.author != null"
+      class ="text-red-500 text-sm"
+      >
+      This is a required field
+      </p>
+      </div>
+      </div>
+      <div class ="sm:col-span-6">
+      <label
+      for="cover"
+      class ="block text-sm font-medium leading-6 text-gray-900"
+      >Cover</label
+      >
+      <div class ="mt-1">
+      <div
+      class ="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md"
+      >
+      <input
+      type ="text"
+      name="cover"
+      id="cover"
+      v-model="formData.image"
+      autocomplete="cover"
+      class ="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+      placeholder="https://path-to-image"
+      />
+      </div>
+      <p
+      v-if="errors.image != null"
+      class ="text-red-500 text-sm"
+      >
+      This is a required field
+      </p>
+      </div>
+      </div>
+      <div class ="sm:col-span-2">
+      <label
+      for="rating"
+      class ="block text-sm font-medium leading-6 text-gray-900"
+      >Rating</label
+      >
+      <div class ="mt-2">
+      <select
+      id="rating"
+      name="rating"
+      v-model.number="formData.rating"
+      class ="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+														>
+      <option : value="1">1</option>
+      <option : value="2">2</option>
+      <option : value="3">3</option>
+      <option : value="4">4</option>
+      <option : value="5">5</option>
+      </select>
+    </div>
+  </div>
+</div>
+										</div >
+									</div >
+
+									<div class="mt-6 flex items-center justify-end gap-x-6">
+										<button
+											type="button"
+											class="text-sm font-semibold leading-6 text-gray-900"
+											@click="closeModal"
+										>
+											Cancel
+										</button>
+										<button
+											type="submit"
+											class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+										>
+											Save
+										</button>
+									</div >
+								</form >
+							</DialogPanel >
+						</TransitionChild >
+					</div >
+				</div >
+			</Dialog >
+		</TransitionRoot >
+  <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-4">
+    <div
+      class="mt-12 grid grid-cols-1 gap-y-10 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-0 lg:gap-x-8"
+    >
+      <div
+        v-for="(book, bookIndex) in books"
+					:key="book.id"
+      class="group relative flex flex-col justify-center items-center sm:flex-none sm:block shadow-lg shadow-gray-500/50 rounded mb-4 pt-2 md:pt-0"
+				>
+      <div
+        class="relative md:h-96 md:w-full overflow-hidden rounded-lg sm:aspect-h-3 sm:aspect-w-2 group-hover:opacity-75 sm:h-auto"
+      >
+        <div v-if="book.rating" class="z-10">
+          <StarIcon
+            class="text-yellow-400 w-20 h-20 absolute right-0 top-0 sm:right-[-6px] sm:top-[-6px] sm:w-14 sm:h-14 md:right-3 md:top-4 lg:right-4 lg:top-6 lg:w-20 lg:h-20"
+          ></StarIcon>
+          <span
+            class="absolute right-[1.95rem] top-6 text-3xl sm:right-[.9rem] sm:top-2 sm:text-2xl md:right-[2.1rem] md:top-7 lg:right-12 lg:top-12 lg:text-3xl"
+          >{{ book.rating }}</span
+          >
+        </div>
+        <img
+							:src="book.image"
+        class="object-cover object-center md:scale-90 rounded-md"
+						/>
+      </div>
+      <h1 class="font-semibold text-gray-900 text-center text-2xl">
+        {{ book.title }}
+      </h1>
+      <h1 class="font-semibold text-gray-900 text-center text-xl">
+        {{ book.author }}
+      </h1>
+
+      <div class="flex items-center justify-center m-2">
+        <button class="flex items-center justify-center flex-1">
+          <StarIcon
+            v-for="rating in [1, 2, 3, 4, 5]"
+								:key="rating"
+          @click="handleChangeRating(bookIndex, rating)"
+          :class="[
+									book.rating >= rating
+          ? 'text-yellow-400 hover:text-yellow-600'
+          : 'text-gray-200 hover:text-gray-400',
+          'h-10 w-10 sm:h-7 sm:w-7 md:h-8 md:w-8 lg:h-10 lg:w-10 flex-shrink-0',
+          ]"
+          aria-hidden="true"
+							/>
+        </button>
+
+        <button
+							@click="removeBook(bookIndex)"
+        class="rounded-full absolute right-1"
+						>
+        <TrashIcon
+          class="h-8 w-8 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8 hover:text-slate-600"
+        />
+      </button>
+    </div>
+  </div>
+			</div >
+		</div >
+	</div >
+</template >
+```
+
+## Add our Dummy Data
+
+Finally, let's add our dummy data. Create a books.json file in the src folder, and add the following dummy data for our books:
+
+```json
+{
+	"items": [
+		{
+			"id": 1,
+			"title": "Alice's Adventures in Wonderland",
+			"author": "Lewis Carroll",
+			"image": "https://covers.openlibrary.org/b/id/10527843-L.jpg",
+			"rating": null
+		},
+		{
+			"id": 1,
+			"title": "Emma",
+			"author": "Jane Austen",
+			"image": "https://covers.openlibrary.org/b/id/9278312-L.jpg",
+			"rating": null
+		},
+		{
+			"id": 1,
+			"title": "Wurthering Heights",
+			"author": "Emily Brontë",
+			"image": "https://covers.openlibrary.org/b/id/12818862-L.jpg",
+			"rating": null
+		}
+	]
+}
+```
+
+We will be making a call to an API for our book data in the next chapter.
+
+## App Preview
+
+Now if you run the dev server in your terminal and open up your browser you should see our app in action.
+
+![](/src/assets/images/vue-book-app-preview.gif)
+
+Not bad for the first rendition of our app! In the next chapter, we will be covering component basics, lifecycle hooks, slots, and async components. I can't wait to see you [there!](/post/component-basics 'Component Basics')

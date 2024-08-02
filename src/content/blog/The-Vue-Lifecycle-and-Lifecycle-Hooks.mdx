@@ -1,0 +1,180 @@
+---
+heroImage: /src/assets/images/vue-js-logo-1.jpg
+chapter: Chapter 2
+description: Vue Lifecycle and Lifecycle Hooks
+pubDate: 2024-08-01T05:00:00.000Z
+tags:
+  - lifecycle hooks
+  - basics
+title: The Vue Lifecycle and Lifecycle Hooks
+---
+
+## The Vue Lifcycle
+
+Through our previous discussions about Vue’s reactivity and how the Virtual DOM works, you should have a basic concept of how Vue renders what it does onto the screen. During the rendering process, you may find yourself needing to run your code during a specific step of this process.
+
+Vue has different methods that coincide with each phase of the rendering lifecycle. The Vue lifecycle starts with the creation of our app.
+
+## How a Vue app is created
+
+If we look inside our main.js file, we’ll see the createApp method imported from vue. The createApp method creates our application instance from the root component, which we import from ./App.vue as App. Every app requires a “root component”, which will contain the rest of the app as children. We then use the .mount() method, which targets an element via a selector string that will serve as a container for our app.
+
+```javascript
+//main.js
+import { createApp } from 'vue'
+import './style.css'
+import App from './App.vue'
+
+createApp(App).mount('#app')
+```
+
+If we peak inside our index.html file in the root folder of our app, we see the \<div> element with the id of #app. This is where Vue will put our application.
+
+```html
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Vite + Vue</title>
+	</head>
+	<body>
+		<div id="app"></div>
+		<script type="module" src="/src/main.js"></script>
+	</body>
+</html>
+```
+
+## Lifecycle Phases
+
+This brings us to the first phase in the Vue lifecycle:  the beforeCreate phase, which is then followed by the created phase. The beforeCreate happens before the app has been fully loaded, and created happens after initialization. At this point, there is nothing on the screen so far. Vue has just initialized its data properties and its general configuration.
+
+The next phase in the lifecycle is the mounting phase. The beforeMount phase occurs right before we can see something on the screen and here we can use the onBeforeMount() hook to execute code during this phase.
+
+So far the Vue app has been initialized, the template has been compiled, and Vue knows what to tell the browser to render on the screen.
+
+After beforeMount comes the mounted phase, when our template is finally rendered to the screen, and we can use the onMounted() hook to execute code if needed.
+
+Once we are in the mounted phase, Vue handles changes to our app through a sub-phase or mini-mount cycle. This subphase is triggered when data changes, and starts with the beforeUpdated phase, which is right before Vue is about to update our app. Here, the onBeforeUpdate() hook is available.
+
+The updated phase follows the beforeUpdated phase and occurs after the DOM has been updated due to a state change. We can use the onUpdated() hook during this phase. Once the updated phase has been completed we re-enter the mounted phase, and the app waits for changes and repeats this process of mounted, beforeUpdate, and updated while using the app.
+
+The final phase of the Vue lifecycle is the unmounting phase, where all of its content is removed from the screen and the data is destroyed. The unmounting phase begins with the beforeUnmount phase, which runs right before our app is unmounted, followed by the unmounted phase. This phase is typically used to execute cleanup code, such as terminating a network or server connection or removing any timers or side effects. You can use the onBeforeUnmount() hook during the beforeUnmount phase, and the onUnmounted() hook runs after the app has been fully unmounted. You typically would execute your cleanup code inside the onUnmounted() hook.
+
+## A Vue lifecycle hook example:
+
+To get a better sense of the Vue lifecycle and use of hooks let's turn to our app. Update the \<script setup> tag in App.vue as follows:
+
+```javascript
+<script setup>
+    import {
+        ref,
+        reactive,
+        onBeforeMount,
+        onMounted,
+        onBeforeUpdate,
+        onUpdated,
+        onBeforeUnmount,
+        onUnmounted,
+} from "vue";
+//...rest of code
+onBeforeMount(() => {
+    console.log("onBeforeMount()");
+});
+onMounted(() => {
+    console.log("onMounted()");
+});
+
+onBeforeUpdate(() => {
+    console.log("onBeforeUpdate()");
+});
+onUpdated(() => {
+    console.log("onUpdated()");
+});
+
+onBeforeUnmount(() => {
+    console.log("onBeforeUnmount");
+});
+onUnmounted(() => {
+    console.log("onUnmounted");
+});
+<script>
+```
+
+We have to slightly tweak main.js for this example to work:
+
+```javascript
+//main.js
+import { createApp } from 'vue'
+import './style.css'
+import App from './App.vue'
+/** If app.mount if chained to createApp() it will return the root component instance instead of the application instance, so we just have to separate them for our example to work.*/
+const app = createApp(App)
+app.mount('#app')
+
+setTimeout(() => {
+	app.unmount()
+}, 5000)
+```
+
+The `setTimout()` function will ensure that our app is unmounted after 5 seconds, so be fast!!!
+
+Now with your developer server running and your app open in the browser with the console showing, if you change the rating of the books within 5 seconds, we should see all of our lifecycle hooks firing in the same order they are written in App.vue:
+
+![](/src/assets/images/lifecycle-hook-demo-ezgif.com-optimize.gif)
+
+Make sure to revert your changes after you do this so your code stays up to date!
+
+## Retrieve our Data from an API with the onBeforeMount() hook
+
+Now that we’ve been introduced to life cycle hooks, let's use one in our app. Let’s replace our dummy books data with real data from an API. To do this, we’ll create an asynchronous function to fetch our data and then call it from inside the onBeforeMount() hook. Remember the onBeforeMount() hook runs right before the mounted life cycle phase but after the created life cycle phase. Shout out to [https://openlibrary.org/](https://openlibrary.org/) for their free and awesome library catalog and API.
+
+In your App.vue, make sure to import onBeforeMount, remove the items import, and change your books ref to an empty array. Next, add the url for our API call right after the imports and our getBooks function and onBeforeMount() lifecycle hook right after our state declarations. We also need to add a few methods to handle the data structure that comes from the API, and the data structure that comes from the user adding a book through the form. Note: we use methods here instead of computed properties because we need to pass it an argument, and computed properties don't accept arguments.
+
+```javascript
+<script setup>
+import {ref, reactive, onBeforeMount} from "vue"; //<---add onBeforeMount to imports from vue
+import {items} from "./books.json" //<--- remove items import
+//imports...
+const url =
+  "https://openlibrary.org/subjects/classic_literature.json?details=false&limit=3";
+
+const books = ref([]);
+//refs...
+
+
+const getBooks = async () => {
+	try {
+		const response = await fetch(url);
+  if (!response.ok) {
+			throw new Error(`HTTP error! Status: ${response.status}`);
+		}
+  const data = await response.json();
+  books.value = data.works;
+	} catch (error) {
+    console.error("Error fetching books:", error);
+	}
+};
+
+onBeforeMount(() => {
+    getBooks();
+});
+
+//other methods...
+const displayAuthorName = (book) => {
+	return book.authors ? book.authors[0].name : book.author;
+};
+
+const getImageSrc = (book) => {
+	return book.cover_id
+  ? `https://covers.openlibrary.org/b/id/${book.cover_id}-L.jpg`
+  : book.image;
+};
+</script>
+
+```
+
+We also need to update our template. Replace the `<img>` tags src attribute with the `getImageSrc` method, passing book as an argument to it, and replace the `{{author.name}}` binding with the `displayAuthorName` method with book as an argument as well.
+
+With this update, our app should be working just as before, only with a little delay in our books rendering while we're waiting for the call to our API to resolve. The onBeforeMount() hook, like all hooks, is executed synchronously, but the code we execute inside of it is asynchronous, so that's why we see the delay. Don't worry, we will be adding a loading spinner to our app when we clean it up at the end of this chapter. You can view the code in its entirety [here](https://github.com/mjay88/vue-book-rating-app/tree/chapter2-vue-lifecycle-hooks 'link to lesson code in github') if you have any issues.
