@@ -339,4 +339,8 @@ By using, props, emits, and slots we have created a highly reusable and flexible
 
 Keep in mind, slots are not better than props. Both features have pros and cons, it all depends on your use case. Slots are mostly reserved for when you need to pass HTML content into your components, like our TrashIcon in the example above, and when you just need to pass data to our component, props are an excellent choice.
 
-Up next, [Lifecycle Hooks!](/post/the-vue-lifecycle-and-lifecycle-hooks/ 'Lifecycle Hooks')
+## Async Components
+
+In large applications, we may need to divide the app into smaller chunks and only load a component from the server when it’s needed. Vue comes with the defineAsyncComponent() function, which you can use to define an async component that is lazy loaded only when it’s rendered. A component defined using defineAsyncCompnonet() results in a wrapper component that only loads the async component when it is needed. Async components can be defined globally as well as locally. We will see how easy Async Components are to create and use in the coding portion of this chapter.
+
+That's a pretty good introduction to components in Vue. Next up, [Lifecycle Hooks!](/post/the-vue-lifecycle-and-lifecycle-hooks/ 'Lifecycle Hooks')

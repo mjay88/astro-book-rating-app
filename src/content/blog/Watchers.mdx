@@ -1,0 +1,88 @@
+---
+heroImage: /src/assets/images/vue-js-logo-1.jpg
+chapter: Chapter 3
+description: Introduction to Watchers
+pubDate: 2024-08-07T05:00:00.000Z
+tags:
+  - chapter 3
+  - watchers
+title: Watchers
+---
+
+## Watchers
+
+Computed properties are useful for reading state values and performing non-mutating tasks based on that state. But sometimes we need to perform "side effects" because of changes to our state, ie: mutating the DOM or making an API call because of user input. Vue provides a way to do this through the watch function.
+
+The watch() function "watches" a piece or pieces of state and triggers a callback function when that state changes. Watch functions accept three arguments. The first argument is the piece of state we are watching, typically a ref, a reactive object, an array of either, or sometimes a getter function that returns a specific property of a reactive state object.
+
+The second argument is a callback function, or the logic you want to run when a change in the watched state is observed. This callback function accepts three arguments: the new state value, the old state value, and a cleanup function.
+
+The third and optional argument is an options object that accepts several fields to help us further configure our watch function. If using a getter function to return a reactive object, the `{deep: true}` option can be set to watch all nested mutations. If you want your watch callback to execute immediately, you can set the `{immediate: true}` option. If you only want the callback to fire once when the source changes, you can use the `{once: true}` option.
+
+Let's turn to our app for an example. Let's add the ability to retrieve the next three books from our API. To do this we first import the "watch" function from 'vue'. Next, we'll have to add some reactive state to track the page number, in this case the API excepts a parameter of 'offset' for pagination, so this is what we'll name our state variable, and initialize it as 0. Then, we call the watch function and pass the offset as the first argument, and define the callback that will trigger when the offset changes. In this callback we simply make a call to the API with the updated query parameter of offset, using a template literal string so we can add the offset value dynamically, which gets passed to the callback in the form of 'newOffset'.
+
+```javascript
+<script setup>
+import {ref, onBeforeMount, defineAsyncComponent, watch} from "vue";
+//rest of imports...
+
+//rest of state variables...
+const offset = ref(0);
+
+//watcher for retieving the next page of books (limited to the first three books)
+watch(offset, async (newOffset, oldOffset) => {
+  try {
+    const response = await fetch(
+  `https://openlibrary.org/subjects/classic_literature.json?details=false&limit=3&offset=${newOffset}`
+  );
+  if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+  const data = await response.json();
+  books.value = mapBookKeys(data.works);
+  console.log(books.value);
+  } catch (error) {
+    console.error("Error fetching books:", error);
+  }
+});
+//rest of methods and computed properties...
+</script>
+
+```
+
+Then in our template, let's create a next button using our component, and wire it up so when it's clicked the value of offset is updated.
+
+```html
+<template>
+  <div class="relative bg-white h-screen">
+    <BaseButton
+      @handleClick="openModal"
+    class="absolute left-5 top-5"
+    label="Add A Book"
+    mode="primary"
+    type="button"
+    >
+    <template #icon>
+      <PlusIcon class="h-4 w-4" />
+    </template>
+  </BaseButton>
+  <div class="absolute right-5 top-5"><!--add this button -->
+    <BaseButton
+        @handleClick="offset += 3"
+    class=""
+    label="Next Page"
+    mode="primary"
+    type="button"
+      >
+  </BaseButton>
+</div>
+<!--rest of template-->
+</template >
+
+```
+
+Now with our app running in the browser, we can see that when the state changes due to clicking the 'next page' button, this triggers our watcher callback and executes the call to our API, updating the state and what we see on the page.
+
+Remember, whenever you need a 'side effect' to happen, using a watcher in Vue is the recommended way.
+
+Next up [Template Refs](/post/template-refs/ 'Template Refs')

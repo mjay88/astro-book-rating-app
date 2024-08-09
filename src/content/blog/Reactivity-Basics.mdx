@@ -126,4 +126,44 @@ console.log(proxy.updatedMessage)
 
 So here we built our own reactive system for tracking one message, and updating updatedMessage when we changed the message property. This is essentially a very simplified version of what Vue does under the hood. It keeps track of all of your data properties, via proxies, and whenever a property changes, it updates the part of our app where we are using that property.
 
+## The Virtual Dom
+
+We have already discussed how Vue uses its reactivity feature to detect how and where an update is needed. But how does it do this in a performance-optimized way?
+
+Let’s consider our Vue App and the Browser DOM - the HTML content rendered by the browser and displayed to the user - as two separate things. Our Vue app, stores data, computed properties, and methods, and tells the Browser DOM what to render with the help of the view controller template. During our Vue apps’ rendering process, the dynamic parts of our app, the variables, the computed properties, and the bindings, are removed and Vue converts its template to the actual HTML elements that should be shown on the screen. When our data or our computed properties change, Vue updates these bindings in the Browser DOM, but it only updates the parts that have changed, it doesn’t re-render the entire page.
+
+Vue accomplishes this through a concept known as the Virtual DOM. Vue holds a copy of the real DOM in memory, structured similarly to a JavaScript object.
+
+Example of Virtual DOM tree:
+
+```html
+<--!Standard HTML Document-->
+<html>
+	<head>
+		<title>My Website</title>
+	</head>
+	<body>
+		<h1>Welcome</h1>
+		<p>This is my website.</p>
+	</body>
+</html>
+```
+
+Represented as nodes in the Virtual Dom:
+
+```javascript
+;-Document(root) -
+	html -
+	head -
+	title -
+	'My Website' -
+	body -
+	h1 -
+	'Welcome' -
+	p -
+	'This is my website.'
+```
+
+When our data changes, Vue creates a new copy of this Virtual DOM, and through a process known as “diffing” or “reconciliation”, compares the new copy with the old copy of the Virtual DOM, and only the differences between the two are updated in the real DOM.
+
 That's it for reactivity basics, next up [Template Syntax and Computed Properties](/post/template-syntax-and-computed-properties/)

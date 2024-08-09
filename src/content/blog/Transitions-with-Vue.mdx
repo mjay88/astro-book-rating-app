@@ -1,0 +1,66 @@
+---
+heroImage: /src/assets/images/vue-js-logo-1.jpg
+chapter: Chapter 3
+description: Transitions With Vue
+pubDate: 2024-08-07T05:00:00.000Z
+tags:
+  - chapter 3
+  - transitions
+title: Transitions with Vue
+---
+
+## Transitions
+
+No application is complete without the addition of smooth transitions or animations. Not only can they provide a better user experience aesthetically, but, they can also make using an application or a website easier.
+
+There are two different phases to a transition. If we take a look at this diagram from the docs we can see that there is the show phase - which the element goes through when it’s being shown to the page -, and the leave phase - which the element goes through when it’s being hidden from the page. Each of these phases involves three different classes which are applied at different times of the phase.
+
+![](/src/assets/images/vue-transitions-diagram.PNG)
+Transition Classes
+
+---
+
+At the very beginning of the phase the .v-enter-from class is added, and is where you set your starting style, then its removed one frame after the element is inserted. At the same time the .v-enter-from class is added, the .v-enter-active class is added. This .v-enter-active class lasts for the entire duration of the show phase. This class is where you define the duration, delay and easing curve for the entering transition. Finally the .v-enter-to class is added immediately after the .v-enter-from class is removed, and remains until the end - the duration defined in our css - of our transition.
+
+These classes then essentially repeated but in reverse order for the leave phase of our transition. The .v-leave-from is where we declare our starting state for the leave phase, and is added and removed immediately when a leaving transition is triggered. At the same time the .v-leave-from class is added, the .v-leave-active class is also added. This class is where you define the duration, delay and easing curve for the leaving transition. Next, the .v-leave-to class is added at the same exact time the .v-leave-from class is removed, and is itself removed when the transition/animation is completed.
+
+## Adding A Transition To Our App
+
+Let's add a transition to our BookCard component. For the transition, we'll make it so it fades in but also moves slightly from left to right, so it really gives of the effect that its sliding in. First, we'll wrap the entire BookCard with the Vue's \<Transition> component. For the fade in effect - targeting the .v-enter-active and .v-leave-active classes - we use the CSS transition property and pass it the property name we want to target, in this case the element's opacity property, the duration we want the transition to last, and the type of easing function. Then, we need to specify the starting state and ending state of the transition by targeting the .v-enter-from and .v-leave-to classes and setting the opacity property to 0.
+
+Then, to accomplish the slide effect, we'll have to initially place the modal 10 pixels to the left of its actual position on the page. We can use the transform and translate properties, and we want to use the translateX function and adjust it on the X axis negative 10 pixels. This means the BookCard will be 10 pixels to the left on the page at the very beginning of the show phase - when the v-enter-from class is added. To transition smoothly from the negative ten pixels to its actual position, we need to register the transform in the transition property we have for .v-enter-active and .v-enter-leave. We can use the same duration and easing as our opacity transition.
+
+Finally, to see our transition on the initial render, we can add the appear prop directly to the Transition component.
+
+```html
+<--!BookCard.vue-->
+<template>
+	<Transition appear> //...rest of template </Transition>
+</template>
+```
+
+Notice that we didn’t have to use .v-enter-to with .v-enter-from or .v-leave-from with .v-leave-to, because the default state of an element in relation to its opacity property is 1, and its transform properties by default is a translate of zero pixels.
+
+## Transition Component Props
+
+In our example above, we used the appear prop to apply the transition to on the initial render of our cards. The \<Transition> component accepts several other props to further customize a transition. We can use the name prop to create custom transition classes, which is useful when you have more than one Transition in a single component. There is also a duration, mode, and type prop which you can read more about in the [official API](https://vuejs.org/api/built-in-components.html#transition 'Transition API') for the \<Transition> component. We can also pass props for customizing transition classes.
+
+## Vue Transitions with Tailwind CSS
+
+Each piece of the transition lifecycle has a corresponding prop that ends with the dash class. So to target the enter-active phase, we can use the enter-active-class prop. This approach is similar to how we are already using Tailwind to style our components with utility classes instead of declaring our styles inside of the \<style> tag. Let’s convert both our BookCard transition to use Tailwind, so our code is cleaner and we don’t result in any overlapping or conflicting classes.
+
+```html
+<!--BookCard.vue-->
+<template>
+  <Transition
+  <--! the easing curve is ease by default in Tailwind  -->
+    appear enter-active-class="transition-opacity duration-1000 transition-transform duration-1000"
+    leave-active-class="transition-opacity duration-1000 transition-transform duration-1000"
+    enter-from-class="opacity-0 -translate-x-3"
+    leave-to-class="opacity-0 -translate-x-3">
+    <--!rest of template...-->
+  </Transition>
+</template>
+```
+
+As you can see, we simply replaced our Transitions classes in the \<style> tag with props passed directly to the Transition component, and now are using Tailwind CSS styles to animate our transition directly in the template. If you needed to, you could also bind these classes with dynamic values using Vue’s v-bind directive.
