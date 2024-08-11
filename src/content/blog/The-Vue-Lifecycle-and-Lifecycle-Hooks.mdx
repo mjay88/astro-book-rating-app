@@ -184,3 +184,5 @@ const getImageSrc = (book) => {
 We also need to update our template. Replace the `<img>` tags src attribute with the `getImageSrc` method, passing book as an argument to it, and replace the `{{author.name}}` binding with the `displayAuthorName` method with book as an argument as well.
 
 With this update, our app should be working just as before, only with a little delay in our books rendering while we're waiting for the call to our API to resolve. The onBeforeMount() hook, like all hooks, is executed synchronously, but the code we execute inside of it is asynchronous, so that's why we see the delay. Don't worry, we will be adding a loading spinner to our app when we clean it up at the end of this chapter. You can view the code in its entirety [here](https://github.com/mjay88/vue-book-rating-app/tree/chapter2-vue-lifecycle-hooks 'link to lesson code in github') if you have any issues.
+
+Up next: [updating our app.](/post/updating-our-app/ 'Updating our app: Chapter 2')
