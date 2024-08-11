@@ -442,6 +442,10 @@ const app = createApp(App).use(router).component('BaseButton', BaseButton).mount
 
 Here, we've imported our router instance we created at router/index.js, and plugged it into our app .use method. Now our RouterView and RouterLink components are registered globally, useRoute is enabled, and the router is ready to handle routes. (Note: the use(router) method must be called before the .mount('#app') is in order to the router to register.)
 
+Alright, with these updates we should now be able to click on the 'Details' button of any given book, and taken to a new page showing the cover, title, and brief description of that book:
+
+![](</src/assets/images/2024-08-1112-55-35-ezgif.com-video-to-gif-converter (1).gif>)
+
 Routing can become much more complex then our basic example here, but this with Vue Router we have successfully added routing to our app, congratulations!
 
 Next up: [cleaning up our app](/post/cleaning-up-our-app/ 'Cleaning up our app')
