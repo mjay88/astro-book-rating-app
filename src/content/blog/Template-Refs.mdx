@@ -9,13 +9,14 @@ tags:
 title: Template Refs
 ---
 
-A template ref allows us to create a direct reference to a specific element or component instance after it’s mounted. Ref (not to be confused with declaring reactive state using ref()) is a special attribute available on elements and components.
+A template ref allows us to create a direct reference to a specific element or component instance after it’s mounted. `ref` (not to be confused with declaring reactive state using ref()) is a special attribute available on elements and components.
 
 In the last chapter, by extracting our form component, we introduced a bug into our app. If you open the form, you’ll notice that the first input field for the book title is no longer autofocused. This is due to converting the FormComponent into an async component, and how the Tailwind classes are applied behind the scenes. Since the form doesn’t render until we call it, the Tailwind script focusing on the form can’t find the input to focus on, resulting in the warning in the console, and the unfocused form.
 
 Luckily, this is a perfect use case for a template ref. To focus the form input, import ref from vue and create a constant variable assigned to calling ref with an argument of null. Using the onMounted() hook, we can access the reference to the input element when the form is created, and then focus the input programmatically.
 
 ```javascript
+//FormComponent.vue
 <script setup>
 import {onMounted, reactive, ref} from "vue";
 //other imports...
@@ -45,8 +46,8 @@ Don't forget to add the ref attribute to the input we want to focus, and wire it
 />
 ```
 
-Now, Unfortunately we can’t get rid of the warning in the console because it is coming from a third party, but our form input now focuses when we open it!
+Now, unfortunately we can’t get rid of the warning in the console because it is coming from a third party, but our form input now focuses when we open it!
 
 A ref can only be accessed after an element or component is mounted, so if you are watching the changes of a template ref, you may need to account for the case where the ref has a null value.
 
-Next up, [Transitions with Vue](/post/transitions/ 'Transitions With Vue')
+Next up, [Transitions with Vue](/post/transitions-with-vue/ 'Transitions With Vue')

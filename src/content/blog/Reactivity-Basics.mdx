@@ -1,9 +1,10 @@
 ---
 heroImage: /src/assets/images/vue-js-logo-1.jpg
 chapter: Chapter 1
-description: explore the basics of reactivity in Vue Js
+description: Explore the basics of reactive state in Vue Js
 pubDate: 2024-07-26T05:00:00.000Z
 tags:
+  - chapter 1
   - reactivity
   - basics
 title: Reactivity Basics
@@ -11,7 +12,7 @@ title: Reactivity Basics
 
 ## Introducing ref()
 
-Using Vue’s Composition API interface, we are given two functions to help manage state - `ref()` and `reactive()`.
+In Vue’s Composition API interface, we are given two functions to help manage state - `ref()` and `reactive()`.
 
 `ref()` is used to create a reactive reference to a single variable, like a string or a number. The `ref()` function takes an argument, usually a primitive type, and returns it wrapped in an object with a .value property. In the script portion of a component, we have to use the .value property to access our ref, while in the template portion of a component, we can directly access our ref without .value, (this is only true if you pass ref a primitive, if it is passed an object you would have to use standard object dot notation to access the value in the template)
 
@@ -21,17 +22,19 @@ We can mutate refs in the template directly in event handlers, or by declaring m
 
 ## Using reactive()
 
-reactive() is used to create a reactive object that can contain multiple properties, like form data. reactive() takes an object as its argument, and Vue is then able to access and mutate all the properties of your reactive object.
+`reactive() `is used to create a reactive object that can contain multiple properties, like form data. `reactive()` takes an object as its argument, and Vue is then able to access, mutate and track changes to all the properties of your reactive object.
 
-Declaring state with reactive() is a little different than using ref(). Some rules to remember when using reactive are: 1) reactive() cannot be used with primitive types, only objects, arrays, as well as Map and Set; 2)Re-assigning state declared with reactive() will result in losing the connection to the original ref (the flow here being to copy previous state into a new object, so your connection to your data is not lost); 3) reactive() is not compatible with object destructuring.
+Declaring state with `reactive()` is a little different than using `ref()`. Some rules to remember when using reactive are: 1)` reactive()` cannot be used with primitive types, only objects, arrays, as well as Map and Set; 2)Re-assigning state declared with `reactive()` will result in losing the connection to the original ref (the proper flow here being to copy previous state into a new object, so your connection to your data is not lost); 3) `reactive()` is not compatible with object destructuring.
 
 ## Vue Behind the Scenes
 
-In Vue, data that is defined reactively, using either ref() or reactive(), gets merged into one global object- the same object will also contain any methods we have defined in our script tag.  Vue turns your data object into a reactive data object by essentially wrapping your properties with a JavaScript feature called proxies. In JavaScript, there is a built-in feature called a proxy, which Vue uses under the hood to wrap your reactive state to keep track of whenever your state changes and updates your app accordingly.
+In Vue data that is defined reactively, using either `ref()` or `reactive()`, gets merged into one global object- the same object will also contain any methods we have defined in our script tag.  Vue turns your data object into a reactive data object by essentially wrapping your properties with a JavaScript feature called proxies. In JavaScript, there is a built-in feature called a proxy, which Vue uses under the hood to wrap your reactive state to keep track of whenever your state changes and updates your app accordingly.
+
+## Proxies Crash Course
 
 To understand how Vue uses this reactivity, let's take a step back and use some vanilla JavaScript to explore what a proxy is and how it works.
 
-This is a regular JavaScript variable, no Vue js used:
+This is a regular, Vue free, JavaScript variable:
 
 ```javascript
 let message = 'Hello'
@@ -43,13 +46,13 @@ Now if we create another variable and assign it to our message variable plus ano
 let updatedMessage = message + ' World!'
 ```
 
-We can log updatedMessage to the screen and get what we’d expect:
+We can log `updatedMessage` to the screen and get what we’d expect:
 
 ```javascript
 console.log(updatedMessage) //"Hello World!"
 ```
 
-But now if we change the message, and console.log updatedMessage again:
+But now if we change the message, and `console.log(updatedMessage)` again:
 
 ```javascript
 let message = 'Hello'
@@ -64,8 +67,6 @@ We get the same thing, "Hello World!"
 ![](/src/assets/images/vue-behind-the-sceens-1.PNG)
 
 We don’t get “Goodbye World!” because JavaScript by default is not reactive. This is where Vue comes in. Vue has a built-in mechanism that tracks when our reactive variables change so that the parts of our app where we are rendering reactive state are updated when this state changes. Vue uses JavaScript proxies to accomplish this.
-
-## Proxies Crash Course
 
 So how do proxies work? Let's explore another example with plain old vanilla JavaScript. Lets first create our initial message, but as an object his time:
 
@@ -99,7 +100,7 @@ Now when we save and reload, what you should see are three console.log messages 
 
 From this example, we can see that the setter function inside of the handler is triggered whenever a property is set on our proxy.
 
-Now, if we were to add another property to our data, and we wanted to make it so that updatedMessage changed when message changed, by using our proxy and the handler which we set up, we can easily implement this. We can check if the key we are setting is ‘message’, and if it is, we want to target our updatedMessage property and set it equal to the new value we assigned for message, plus “World”. If we make sure to console.log proxy.updatedMessage, we can observe that updatedMessage is updated to the same value we set message to:
+Now, if we were to add another property to our data, and we wanted to make it so that `updatedMessage` changed when message changed, by using our proxy and the handler which we set up, we can easily implement this. We can check if the key we are setting is ‘message’, and if it is, we want to target our updatedMessage property and set it equal to the new value we assigned for message, plus “World”. If we make sure to `console.log(proxy.updatedMessage)`, we can observe that `updatedMessage` is updated to the same value we set message to:
 
 ```javascript
 const data = {
@@ -124,13 +125,13 @@ console.log(proxy.updatedMessage)
 
 ![](/src/assets/images/vue-behind-the-sceens-4.PNG)
 
-So here we built our own reactive system for tracking one message, and updating updatedMessage when we changed the message property. This is essentially a very simplified version of what Vue does under the hood. It keeps track of all of your data properties, via proxies, and whenever a property changes, it updates the part of our app where we are using that property.
+So here we built our own reactive system for tracking one message, and updating `updatedMessage` when we changed the message property. This is essentially a very simplified version of what Vue does under the hood. It keeps track of all of your data properties, via proxies, and whenever a property changes, it updates the part of our app where we are using that property.
 
 ## The Virtual Dom
 
 We have already discussed how Vue uses its reactivity feature to detect how and where an update is needed. But how does it do this in a performance-optimized way?
 
-Let’s consider our Vue App and the Browser DOM - the HTML content rendered by the browser and displayed to the user - as two separate things. Our Vue app, stores data, computed properties, and methods, and tells the Browser DOM what to render with the help of the view controller template. During our Vue apps’ rendering process, the dynamic parts of our app, the variables, the computed properties, and the bindings, are removed and Vue converts its template to the actual HTML elements that should be shown on the screen. When our data or our computed properties change, Vue updates these bindings in the Browser DOM, but it only updates the parts that have changed, it doesn’t re-render the entire page.
+Let’s consider our Vue App and the Browser DOM - the HTML content rendered by the browser and displayed to the user - as two separate things. Our Vue app, stores data, computed properties, and methods, and tells the Browser DOM what to render with the help of the view controller template. During our Vue apps' rendering process, the dynamic parts of our app, the variables, the computed properties, and the bindings, are removed and Vue converts its template to the actual HTML elements that should be shown on the screen. When our data or our computed properties change, Vue updates these bindings in the Browser DOM, but it only updates the parts that have changed, it doesn’t re-render the entire page.
 
 Vue accomplishes this through a concept known as the Virtual DOM. Vue holds a copy of the real DOM in memory, structured similarly to a JavaScript object.
 

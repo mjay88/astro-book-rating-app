@@ -4,6 +4,7 @@ chapter: Chapter 1
 description: The first rendition of our book rating app
 pubDate: 2024-08-09T05:00:00.000Z
 tags:
+  - chapter 1
   - code
   - basics
 title: 'Chapter 1: Coding Our App'
@@ -11,9 +12,9 @@ title: 'Chapter 1: Coding Our App'
 
 ## What we will be building
 
-The full code for this section is available [here](https://github.com/mjay88/vue-book-rating-app/tree/chapter1 'https://github.com/mjay88/vue-book-rating-app/tree/chapter1').
+The full code for this section is available [here](https://github.com/mjay88/vue-book-rating-app/tree/chapter1 'Chapter 1 Github Repository').
 
-Our book app will be pretty basic to start. We will have our books rendered as list of cards, displaying the book cover, the title, and the author. We will have an interactive star rating element that starts at zero but which we can change by clicking on one of five stars. If a book is rated, its rating will also appear in the top right corner of the cover. There will also be button to remove a book from our collection.
+Our book app will be pretty basic to start. We will have our books rendered as list of cards, displaying the book cover, the title, and the author. We will have an interactive star rating element that starts at zero but which we can change by clicking on one of five stars. If a book is rated, its rating will also appear in the top right corner of the cover. There will also be a button to remove a book from our collection.
 
 Additionally, we will have an Add A Book button. Clicking the button will open a form, with title, author, image, and rating fields. We will add some very basic form validation that will require the first three fields to not be empty. Submitting a valid form will append our new book to the end of our books list.
 
@@ -26,17 +27,26 @@ Since we know we want to use Tailwind, there’s a specific command we can run t
 After you’ve set up your application, install the rest of the dependencies we will be using:
 
 ```javascript
-npm install @headlessui/vue @tailwindcss/forms @tailwindcss/aspect-ratio prettier-plugin-tailwindcss
+npm install @headlessui/vue @tailwindcss/forms @heroicons/vue @tailwindcss/typography @tailwindcss/aspect-ratio prettier-plugin-tailwindcss
 ```
 
-You'll have to update your taiwlind.config.js file too:
+You'll have to update your tailwind.config.js file too:
 
 ```javascript
-plugins: [
-	'prettier-plugin-tailwindcss',
-	require('@tailwindcss/aspect-ratio'),
-	require('@tailwindcss/forms')
-]
+/** @type {import('tailwindcss').Config} */
+export default {
+	content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+	theme: {
+		extend: {}
+	},
+
+	plugins: [
+		'prettier-plugin-tailwindcss',
+		require('@tailwindcss/typography'),
+		require('@tailwindcss/aspect-ratio'),
+		require('@tailwindcss/forms')
+	]
+}
 ```
 
 Vue files are structured to leverage the framework’s declarative rendering, which is one of the features that make it simple and intuitive to reflect your state in the HTML markup. A standard Vue file will be separated into three parts: the script tag, which manages your imports and holds your state and logic; the template tag, which provides the page’s HTML structure; and the style tag, where we write our CSS. The style tag comes with a scoped attribute, which will keep our styles local to this specific file.
@@ -59,7 +69,7 @@ const message = ref("Hello World")
 
 ```
 
-To get started let's remove everything from our boilerplate template so we just have an empty file in App.vue with just our \<script setup> tag and our \<template> tag.
+To get started let's remove everything from our boilerplate. Remove HelloWorld.vue from the components directory, and delete everything in App.vue so we just have an empty \<script setup> and \<template> tag.
 
 ```javascript
 <script setup>
@@ -71,9 +81,9 @@ To get started let's remove everything from our boilerplate template so we just 
 </template >
 ```
 
-## Add our imports
+## Add our Imports, State, and Methods
 
-Lets start by adding all of our imports to our script tag:
+Let's start by adding our imports, state, and the methods we'll need in our script tag:
 
 ```javascript
 <script setup>
@@ -89,16 +99,7 @@ Lets start by adding all of our imports to our script tag:
     TransitionChild,
     TransitionRoot,
 } from "@headlessui/vue";
-</script>
-```
 
-## Add our state
-
-Then let's add the state we will need:
-
-```javascript
-<script setup>
-//...imports
   const books = ref(items);
 
   const errors = reactive({
@@ -109,7 +110,7 @@ Then let's add the state we will need:
 });
 
   const formData = reactive({
-  id: null,
+    id: null,
   title: null,
   author: null,
   image: null,
@@ -117,60 +118,50 @@ Then let's add the state we will need:
 });
 
   const validations = reactive({
-  title: "required",
+    title: "required",
   author: "required",
   image: "required",
 });
-</script>
-```
 
-## Add our methods
-
-Next, add all of our methods:
-
-```javascript
-<script setup>
-//...imports
-//...methods
 const validationRules = (rule) => {
-  if (rule === "required") return /^ *$/;
+	if (rule === "required") return /^ *$/;
   return null;
 };
 
 const validate = () => {
-  let valid = true;
+    let valid = true;
   clearErrors();
   for (const [field, rule] of Object.entries(validations)) {
-    const validation = validationRules(rule);
-    if (validation) {
-      if (validation.test(formData[field] || "")) {
-        errors[field] = `${field} is ${rule}`;
-        valid = false;
-      }
-    }
-  }
+		const validation = validationRules(rule);
+  if (validation) {
+			if (validation.test(formData[field] || "")) {
+    errors[field] = `${field} is ${rule}`;
+  valid = false;
+			}
+		}
+	}
   return valid;
-}
+};
 const clearErrors = () => {
-  errors.title = null;
+    errors.title = null;
   errors.author = null;
   errors.image = null;
   errors.rating = null;
 };
 
-const isModalOpen = ref(false);
+  const isModalOpen = ref(false);
 
 const closeModal = () => {
-  isModalOpen.value = false;
+    isModalOpen.value = false;
   resetForm();
 };
 
 const openModal = () => {
-  isModalOpen.value = true;
+    isModalOpen.value = true;
 };
 
 const resetForm = () => {
-  formData.title = null;
+    formData.title = null;
   formData.author = null;
   formData.image = null;
   formData.rating = null;
@@ -178,20 +169,19 @@ const resetForm = () => {
 };
 
 const handleFormSubmission = () => {
-  if (validate()) {
-    const newBook = { ...formData, id: Number(Date.now()) };
-    books.value.push(newBook);
-    closeModal();
-  }
+	if (validate()) {
+		const newBook = {...formData, id: Number(Date.now()) };
+  books.value.push(newBook);
+  closeModal();
+	}
 };
 
-
 const handleChangeRating = (bookIndex, newRating) => {
-  books.value[bookIndex].rating = newRating;
+    books.value[bookIndex].rating = newRating;
 };
 
 const removeBook = (bookIndex) => {
-  books.value = books.value.filter((book, bookIdx) => bookIndex !== bookIdx);
+    books.value = books.value.filter((book, bookIdx) => bookIndex !== bookIdx);
 };
 </script>
 ```
@@ -286,7 +276,7 @@ And then add our structure to our template tag:
       <label
       for="author"
       class ="block text-sm font-medium leading-6 text-gray-900"
-      >Title</label
+      >Author</label
       >
       <div class ="mt-1">
       <div
@@ -351,11 +341,11 @@ And then add our structure to our template tag:
       v-model.number="formData.rating"
       class ="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
 														>
-      <option : value="1">1</option>
-      <option : value="2">2</option>
-      <option : value="3">3</option>
-      <option : value="4">4</option>
-      <option : value="5">5</option>
+      <option :value="1">1</option>
+      <option :value="2">2</option>
+      <option :value="3">3</option>
+      <option :value="4">4</option>
+      <option :value="5">5</option>
       </select>
     </div>
   </div>

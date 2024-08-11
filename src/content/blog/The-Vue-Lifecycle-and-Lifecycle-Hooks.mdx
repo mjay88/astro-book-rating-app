@@ -4,8 +4,8 @@ chapter: Chapter 2
 description: Vue Lifecycle and Lifecycle Hooks
 pubDate: 2024-08-01T05:00:00.000Z
 tags:
+  - chapter 2
   - lifecycle hooks
-  - basics
 title: The Vue Lifecycle and Lifecycle Hooks
 ---
 
@@ -50,17 +50,21 @@ If we peak inside our index.html file in the root folder of our app, we see the 
 
 This brings us to the first phase in the Vue lifecycle:  the beforeCreate phase, which is then followed by the created phase. The beforeCreate happens before the app has been fully loaded, and created happens after initialization. At this point, there is nothing on the screen so far. Vue has just initialized its data properties and its general configuration.
 
-The next phase in the lifecycle is the mounting phase. The beforeMount phase occurs right before we can see something on the screen and here we can use the onBeforeMount() hook to execute code during this phase.
+The next phase in the lifecycle is the mounting phase. The beforeMount phase occurs right before we can see something on the screen and here we can use the `onBeforeMount()` hook to execute code during this phase.
 
 So far the Vue app has been initialized, the template has been compiled, and Vue knows what to tell the browser to render on the screen.
 
-After beforeMount comes the mounted phase, when our template is finally rendered to the screen, and we can use the onMounted() hook to execute code if needed.
+After beforeMount comes the mounted phase, when our template is finally rendered to the screen, and we can use the `onMounted()` hook to execute code if needed.
 
-Once we are in the mounted phase, Vue handles changes to our app through a sub-phase or mini-mount cycle. This subphase is triggered when data changes, and starts with the beforeUpdated phase, which is right before Vue is about to update our app. Here, the onBeforeUpdate() hook is available.
+Once we are in the mounted phase, Vue handles changes to our app through a sub-phase or mini-mount cycle. This subphase is triggered when data changes, and starts with the beforeUpdated phase, which is right before Vue is about to update our app. Here, the `onBeforeUpdate()` hook is available.
 
-The updated phase follows the beforeUpdated phase and occurs after the DOM has been updated due to a state change. We can use the onUpdated() hook during this phase. Once the updated phase has been completed we re-enter the mounted phase, and the app waits for changes and repeats this process of mounted, beforeUpdate, and updated while using the app.
+The updated phase follows the beforeUpdated phase and occurs after the DOM has been updated due to a state change. We can use the `onUpdated()` hook during this phase. Once the updated phase has been completed we re-enter the mounted phase, and the app waits for changes and repeats this process of mounted, beforeUpdate, and updated while using the app.
 
-The final phase of the Vue lifecycle is the unmounting phase, where all of its content is removed from the screen and the data is destroyed. The unmounting phase begins with the beforeUnmount phase, which runs right before our app is unmounted, followed by the unmounted phase. This phase is typically used to execute cleanup code, such as terminating a network or server connection or removing any timers or side effects. You can use the onBeforeUnmount() hook during the beforeUnmount phase, and the onUnmounted() hook runs after the app has been fully unmounted. You typically would execute your cleanup code inside the onUnmounted() hook.
+The final phase of the Vue lifecycle is the unmounting phase, where all of its content is removed from the screen and the data is destroyed. The unmounting phase begins with the beforeUnmount phase, which runs right before our app is unmounted, followed by the unmounted phase. This phase is typically used to execute cleanup code, such as terminating a network or server connection or removing any timers or side effects. You can use the `onBeforeUnmount()` hook during the beforeUnmount phase, and the `onUnmounted()` hook runs after the app has been fully unmounted. You typically would execute your cleanup code inside the `onUnmounted()` hook.
+
+Here is a handy diagram from the Vue documentation to help you visualize the lifecycle phases:
+
+![](/src/assets/images/vue-lifecycle-phases.PNG)
 
 ## A Vue lifecycle hook example:
 
@@ -109,7 +113,9 @@ We have to slightly tweak main.js for this example to work:
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
-/** If app.mount if chained to createApp() it will return the root component instance instead of the application instance, so we just have to separate them for our example to work.*/
+/** If app.mount is chained to createApp() it will return the root component instance
+ * instead of the application instance, so we just have to separate them for our
+ * example to work.*/
 const app = createApp(App)
 app.mount('#app')
 
@@ -128,7 +134,7 @@ Make sure to revert your changes after you do this so your code stays up to date
 
 ## Retrieve our Data from an API with the onBeforeMount() hook
 
-Now that we’ve been introduced to life cycle hooks, let's use one in our app. Let’s replace our dummy books data with real data from an API. To do this, we’ll create an asynchronous function to fetch our data and then call it from inside the onBeforeMount() hook. Remember the onBeforeMount() hook runs right before the mounted life cycle phase but after the created life cycle phase. Shout out to [https://openlibrary.org/](https://openlibrary.org/) for their free and awesome library catalog and API.
+Now that we’ve been introduced to life cycle hooks, let's use one in our app. Let’s replace our dummy books data with real data from an API. To do this, we’ll create an asynchronous function to fetch our data and then call it from inside the onBeforeMount() hook. Remember the onBeforeMount() hook runs right before the mounted life cycle phase but after the created life cycle phase. Shout out to [https://openlibrary.org/](https://openlibrary.org/) for their free and awesome library catalog and API!
 
 In your App.vue, make sure to import onBeforeMount, remove the items import, and change your books ref to an empty array. Next, add the url for our API call right after the imports and our getBooks function and onBeforeMount() lifecycle hook right after our state declarations. We also need to add a few methods to handle the data structure that comes from the API, and the data structure that comes from the user adding a book through the form. Note: we use methods here instead of computed properties because we need to pass it an argument, and computed properties don't accept arguments.
 

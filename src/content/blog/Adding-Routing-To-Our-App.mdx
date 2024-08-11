@@ -11,11 +11,11 @@ title: Adding Routing To Our App
 
 ## Routing
 
-With Vue we build JavaScript driven client side web applications, or, web applications where what the user sees is entirely controlled by JavaScript running in the browser. We have seen (or have we?) that in Single Page Applications, we have one single HTML file, and that file includes imports to the scripts of all the JavaScript code that Vue compiles from our .vue files.
+With Vue we build JavaScript driven client side web applications, or, web applications where what the user sees is entirely controlled by JavaScript running in the browser. We have seen that our Vue app has a single HTML file, and that file includes the script that links to all the JavaScript code that Vue compiles from our .vue files.
 
-This approach is great, and has worked for us so far, but what if we wanted to expand our app. What if we wanted to make it so we could click on an individual book and then go to a ‘book details’ page? With what we know so far, we could create another component, maybe called BookDetails.vue, and pass our books data and the index of the book we clicked on as props, and some state indicating whether or not to show this component or not, and we could probably get this working. But this is not ideal for a number of reasons, one of which being that this solution has nothing to do with our url - it would never change. We could only ever navigate to our home page or starting route in our application, which for us right now in development is localhost:5173, which is just “yourdomainnamehere/” in production.
+This approach is great, and has worked for us so far, but what if we wanted to expand our app. What if we wanted to make it so we could click on an individual book and then go to a ‘book details’ page? With what we know so far, we could create another component, maybe called BookDetails.vue, and pass our books data and the index of the book we clicked on as props, and some state indicating whether or not to show this component or not, and we could probably get this working. But this is not ideal for a number of reasons, one of which is that this solution has nothing to do with our URL - it would never change. We could only ever navigate to our home page or starting route in our application, which for us right now in development is localhost:5173, which is just “yourdomainnamehere/” in production.
 
-In reality we would want to power our app through JavaScript while still interacting with the url, so that when we go to an individual book, it gives an address of sorts where we can navigate back to this page without having to first go through the home page. Vue provides us with another package we can install that will help us handle url changes in the browser and sync them with JavaScript changes in our app.
+In reality, we would want to power our app through JavaScript while still interacting with the URL, so that when we go to an individual book, it gives an address of sorts where we can navigate back to this page without having to first go through the home page. Vue provides us with another package we can install that will help us handle URL changes in the browser and sync them with JavaScript changes in our app.
 
 ## What We're Updating
 
@@ -23,9 +23,11 @@ So what we want to accomplish with routing is to display the app as we know it s
 
 ## Setting Up The Router
 
-Vue Router is the official router for Vue. To use it, we first need to install it. If you were to start a brand new app by following the documentation here, the vite build process would actually ask you if you want it to install Vue Router for you. Since we skipped that step when we built our app, we’ll have to install it manually, but don’t worry because its super easy. I’ll link the official installation page [here](https://router.vuejs.org/installation.html 'Vue Router Installation'), but all we have to do is run the command:
+Vue Router is the official router for Vue. To use it, we first need to install it. If you were to start a brand new app by following the Vue installation documentation, the Vite build process would ask you if you want it to install Vue Router for you. Since we skipped that step when we built our app, we’ll have to install it manually, but don’t worry because it's super easy. I’ll link the official installation page [here](https://router.vuejs.org/installation.html 'Vue Router Installation'), but all we have to do is run the command:
 
-npm install vue-router\@4
+```javascript
+npm install vue-router@4
+```
 
 Bam! Router installed.
 
@@ -35,6 +37,7 @@ Bam! Router installed.
 import { createRouter, createWebHistory } from 'vue-router'
 import BookDetails from '../pages/BookDetails.vue'
 import HomePage from '../pages/HomePage.vue'
+import NotFound from '../pages/404.vue'
 
 const router = createRouter({
 	history: createWebHistory(),
@@ -48,25 +51,25 @@ const router = createRouter({
 export default router
 ```
 
-Once installed we need to configure how we will use the router. Conventionally, you will host your routes in its own dedicated directory, inside of its own index.js file, and that’s what we'll do. In your source folder create a new folder called routes and inside an index.js file. Here is where we will configure the router.
+Once installed we need to configure how we will use the router. Conventionally, you will host your routes in their own dedicated directory, inside of its own index.js file, and that’s what we'll do. In your source folder create a new folder called routes and inside an index.js file. Here is where we will configure the router.
 
 First we import createRouter and createWebHistory from “vue-router”. CreateRouter creates the router instance where we will configure our routes. CreateWebHistory is basically telling the router how to manage the routing history in this app, so when a user clicks somewhere and goes to a different page, this new page is added to the browsing history so something like clicking the back button works as you’d expect.
 
-We also import our new components: BookDetails, where we have the template for when an individual book is clicked; and HomePage, which is the exact same as everything we previously had in App.vue, just extracted into its own component. This will make more sense a little bit further down.
+We also import our new components: `<BookDetails>`, where we have the template for when an individual book is clicked; and `<HomePage>`, which is the exact same as everything we previously had in App.vue, just extracted into its own component. This will make more sense a little bit further down.
 
 To create a router instance we initialize a constant - router seems like an appropriate name - and assign it to calling the createRoute function, passing in a configuration object. This configuration object will take two options, the history option, which we simply assign to a call to createWebHistory(), and routes, which is an array that will hold all of our routes, or URLs that we would like to support.
 
-For each route we would like, we pass a JavaScript object into our routes array. For every route, we need to set a path, which tells the router what to load if we are at this url. We next set what we want loaded at this path, which will be a component. We have the first route set so when we are at the "/" route - which is localhost:5173, which is “yourdomainnamehere/” in production - to render the HomePage component.
+For each route we would like, we pass a JavaScript object into our routes array. For every route, we need to set a path, which tells the router what to load if we are at this URL. We next set what we want to be loaded at this path, which will be a component. We have the first route set so when we are at the "/" route - which is localhost:5173, which is “yourdomainnamehere/” in production - to render the `<HomePage>` component.
 
-The second route we have configured with the path set to "/books/\:bookId". A colon in our path indicates that this is a dynamic route. A dynamic route is how the router uses some information we pass it, called a param, to render the same component but with different data. In our case, the BookDetails component will be reused by with a different book.
+The second route we have configured with the path set to "/books/\:bookId". A colon in our path indicates that this is a dynamic route. A dynamic route is how the router uses some information we pass it, called a param, to render the same component but with different data. In our case, the `<BookDetails>` component will be reused with a different book information.
 
-Finally we have our catch all route. The catch all route uses a dynamic route segment with a custom param regexp to match any URLs that aren't matched by the routes above. Think of it like the final else block in an if/else statement: if the URL in the browser doesn't match any previous routes, render the 404 page, which we have imported as its own component named NotFound.
+Finally, we have our catch-all route. The catch-all route uses a dynamic route segment with a custom param regexp to match any URLs that aren't matched by the routes above. Think of it like the final else block in an if/else statement: if the URL in the browser doesn't match any previous routes, render the 404 page, which we have imported as its own component named NotFound.
 
-Finally, we need to make sure to export our router so we can make sure to plug it into our app in main.js later.
+Finally, we need to make sure to export our router so we can plug it into our app in main.js later.
 
 ## Pages Directory
 
-In our updated app I we have a pages directory, which by convention should hold all the separate page views or screens that the user can navigate to and from. I moved everything we previously had in App.vue to pages/HomePage.vue:
+In our updated app we have a new pages directory which by convention should hold all the separate page views or screens that the user can navigate to and from. Create a pages directory in the src folder and a HomePage.vue file in the pages directory, and move everything we previously had in App.vue to pages/HomePage.vue:
 
 ```javascript
 <script setup>
@@ -178,11 +181,11 @@ const removeBook = (bookId) => {
 		<AsyncModalComponent
 			:isModalOpen="isModalOpen"
 			title="Add A New Book"
-			@close: modal = "closeModal"
+			@close:modal = "closeModal"
   >
   <AsyncFormComponent
-				@add: book = "handleFormSubmission"
-@close: modal = "closeModal"
+				@add:book="handleFormSubmission"
+				@close:modal="closeModal"
   />
 		</AsyncModalComponent >
 
@@ -204,7 +207,7 @@ const removeBook = (bookId) => {
 
 ```
 
-An created a new screen for our BookDetails.vue:
+Next create a new page for our BookDetails.vue in the pages directory:
 
 ```javascript
 <script setup>
@@ -337,7 +340,9 @@ watch(book, async (newBook, oldBook) => {
 
 If you remember from above, our HomePage.vue gets rendered when our URL matches the "/" route, and our BookDetails.vue will be rendered when the URL matches /books/a-book-id.
 
-I've also updated the template in Bookcard.vue with and additional "Details" button:
+(Note: Our `BookDetails.vue` page also contains a 'Go Home' button which navigates back to the '/' route. If you had previously clicked 'Next Page' to retrieve the next 3 books from the API, this data will not be what you are shown when you click 'Go Home', because without global state management, we have no way of persisting this data.)
+
+I've also updated the template in Bookcard.vue with an additional "Details" button:
 
 ```javascript
 //Bookcard.vue
@@ -352,11 +357,45 @@ I've also updated the template in Bookcard.vue with and additional "Details" but
 </template>
 ```
 
-Here we use the \<RouterLink> tag to trigger a navigation when clicked, similar to the native \<a> tag. We use the to prop to manipulate the URL in the browser, here, we want to use the named route of 'books', and we want to add the param or dynamic segment of the bookId, which we are getting from our book key. We can than access this param in in BookDetails when its rendered by the router.
+Here we use the `<RouterLink>` tag to trigger a navigation when clicked, similar to the native `<a>` tag. We use the _to_ prop to manipulate the URL in the browser, here, we want to use the named route of 'books', and we want to add the param or dynamic segment of the bookId, which we are getting from our book key. We can then access this param in BookDetails when it's rendered by the router.
 
-To access information about our route, Vue Router gives us the useRoute hook. We can use this hook to extract the bookId from our params in BookDetails.vue. Whenever you use useRoute you need to create an instance of it by assigning it to a constant, we'll use route. Inside of route there will be a lot of properties we can use, but the one we want now is the params, which is an object which contains all the data passed into the dynamic segment of our route from BookCard.vue. So we can access the bookId at route.params.bookId. Now we can use this bookId and retrieve our individual book from the API and render it.
+To access information about our route, Vue Router gives us the _useRoute_ hook. We can use this hook to extract the bookId from our params in BookDetails.vue. Whenever you use _useRoute_ you need to create an instance of it by assigning it to a constant, we'll use _route_. Inside of route there will be a lot of properties we can use, but the one we want now is the params, which is an object that contains all the data passed into the dynamic segment of our route from BookCard.vue. So we can access the bookId at _route.params.bookId_. Now we can use this bookId and retrieve our individual book from the API and render it.
 
-There is one edge case we need to be aware of when routing with params. Since we are re-using the BookDetails.vue page, Vue will not unmount and remount the component for the sake of efficiency. Since the component never remounts, its lifecycle hooks never trigger either, resulting in our state on the screen not updating even if the state has changed. To handle this case we can use the watch function to watch for changes on the params object, thus ensuring that the life cycle hooks are triggered and our state changes rendered. (As our app stands, we are not in danger of this happening. We are using a watcher to retrieve the author of the book as per the requirements of our API, but our component will always be mounted with new data because of how we navigate to it from the home page. This is still a common edge case so its good to be aware of).
+There is one edge case we need to be aware of when routing with params. Since we are re-using the BookDetails.vue page, Vue will not unmount and remount the component for the sake of efficiency. Since the component never remounts, its lifecycle hooks never trigger either, resulting in our state on the screen not updating even if the state has changed. To handle this case we can use the watch function to watch for changes on the params object, thus ensuring that the life cycle hooks are triggered and our state changes rendered. (As our app stands, we are not in danger of this happening. We are using a watcher to retrieve the author of the book as per the requirements of our API, but our component will always be mounted with new data because of how we navigate to it from the home page. This is still a common edge case so it's good to be aware of).
+
+And finally add the Not Found page as 404.vue inside the pages directory:
+
+```javascript
+<script setup>
+import { RouterLink } from "vue-router";
+</script>
+<template>
+	<main class="relative isolate h-screen">
+		<img
+			src="https://images.unsplash.com/photo-1694180847438-261238ab1710?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+			alt=""
+			class="absolute inset-0 -z-10 h-full w-full object-cover object-bottom"
+		/>
+		<div class="mx-auto max-w-7xl px-6 py-32 text-center sm:py-40 lg:px-8">
+			<p class="text-base font-semibold leading-8 text-white">404</p>
+			<h1 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-5xl">
+				Page not found
+			</h1>
+			<p class="mt-4 text-base text-white/70 sm:mt-6">
+				Sorry, we couldn’t find the page you’re looking for.
+			</p>
+			<div class="mt-10 flex justify-center">
+				<RouterLink to="/" class="text-sm font-semibold leading-7 text-white"
+					><span aria-hidden="true">&larr;</span> Back to home</RouterLink
+				>
+			</div>
+		</div>
+	</main>
+</template>
+
+```
+
+Try typing '/adfafds' into the URL and see what happens.
 
 ## Router Outlet with RouterView
 
@@ -369,26 +408,26 @@ Early we saw that we cut and pasted everything from our old App.vue into our Hom
 </template>
 ```
 
-Here, we are simply rendering the \<RouterView> component. \<RouteView> is component built into Vue Router that essentially acts as the outlet for all of our routes. Basically our entire app is wrapped in the \<RouteView> component and the router will pass it the component to render based on the URL via a \<slot> that \<RouteView> exposes. You can use \<RouteView> any where in your app, but it makes sense for us to use it here in App.vue. A typically app might look something more like this:
+Here, we are simply rendering the `<RouterView>` component. `<RouteView>` is component built into Vue Router that essentially acts as the outlet for all of our routes. Basically, our entire app is wrapped in the `<RouteView>` component and the router will pass it the component to render based on the URL via a \<slot> that `<RouteView>` exposes. You can use `<RouteView>` anywhere in your app, but it makes sense for us to use it here in App.vue. A typical app might look something more like this:
 
 ```javascript
 //App.vue
 <template>
-  <Header />
-  <Navigation />
-    <container>
-    <SideBar>
-    <RouterView />
-    </container>
-  <Footer />
+	<Header />
+	<Navigation />
+	<container>
+		<SideBar />
+		<RouterView />
+	</container>
+	<Footer />
 </template>
 ```
 
-Here all the other components content would likely remain static, while \<RouteView/> handled the URL changes registered in our router.
+Here all the other components' content would likely remain static, while \<RouteView/> handled the URL changes registered in our router.
 
 ## Registering The Router
 
-The final change in our updated app is registering the router with our app.
+The final change in our updated app is registering the router with our app in main.js:
 
 ```javascript
 //main.js
@@ -401,4 +440,8 @@ import router from './router'
 const app = createApp(App).use(router).component('BaseButton', BaseButton).mount('#app')
 ```
 
-Here, we've imported our router instance we created at router/index.js, and plugged it into our app .use method. Now our RouterView and RouterLink components are registered globally, useRoute is enabled, and the router is ready to handle routes.
+Here, we've imported our router instance we created at router/index.js, and plugged it into our app .use method. Now our RouterView and RouterLink components are registered globally, useRoute is enabled, and the router is ready to handle routes. (Note: the use(router) method must be called before the .mount('#app') is in order to the router to register.)
+
+Routing can become much more complex then our basic example here, but this with Vue Router we have successfully added routing to our app, congratulations!
+
+Next up: [cleaning up our app](/post/cleaning-up-our-app/ 'Cleaning up our app')

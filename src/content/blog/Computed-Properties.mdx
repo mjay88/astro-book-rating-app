@@ -1,0 +1,47 @@
+---
+heroImage: /src/assets/images/vue-js-logo-1.jpg
+chapter: Chapter 1
+description: Computed Properties
+pubDate: 2024-07-28T05:00:00.000Z
+tags:
+  - chapter 1
+  - computed properties
+  - basics
+title: Computed Properties
+---
+
+## Computed Properties
+
+Using expressions directly in our template is very easy, but a good practice is to keep these expressions limited to simple operations. If you have complex logic that includes reactive state, it is best to use a computed property. A computed property allows us to read and perform calculations on our state:
+
+```javascript
+<script setup>
+import { reactive, computed } from 'vue'
+
+const author = reactive({
+    name: 'Agitha Christie',
+    bestSellingbooks: [
+    'And Then There Were None',
+    'Murder on the Orient Express',
+    'A murder at the Vicarage'
+  ]
+})
+
+// a computed ref
+const herBestBooks = computed(() => {
+  return author.bestSellingBooks.length
+})
+</script>
+
+<template>
+  <p>{{author.name}} has {{herBestBooks}} considered as her best selling books.</p>
+</template>
+```
+
+In this example, we import computed and then assign a computed ref to an invocation of the computed function, which expects a getter function, and the returned value can then be used as our computed ref. If used in the \<script setup> tag, you can access the value of the computed property just like a normal ref, using the .value notation, and similarly, computed refs are unwrapped for us when we use them in the template.
+
+Another feature of computed refs is that they automatically track the changes to any reactive data that they depend on. In the example above, if we updated our bestSellingBooks array, the computed ref would automatically re-calculate to show this update, using Vue’s reactivity to stay in sync with our state. Computed refs are cached based on their reactive dependencies. This means that our expression will not re-evaluate unless the reactive data used inside of it has changed, cutting down on unnecessary computational overhead.
+
+Computed properties should be free of side effects such as mutating state, making async requests, or updating and changing the DOM. Its only job should be reading, computing, and returning derived state, and is not for changing or updating state.
+
+Next lesson: [Event Handling and Form Input Binding](/post/event-handling-and-form-input-binding 'Event Handling and Form Input Binding')

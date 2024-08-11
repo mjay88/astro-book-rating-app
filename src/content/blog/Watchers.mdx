@@ -1,5 +1,5 @@
 ---
-heroImage: /src/assets/images/vue-js-logo-1.jpg
+heroImage: /src/assets/images/brad-weaver-okSWmVUKlGA-unsplash.jpg
 chapter: Chapter 3
 description: Introduction to Watchers
 pubDate: 2024-08-07T05:00:00.000Z
@@ -13,13 +13,13 @@ title: Watchers
 
 Computed properties are useful for reading state values and performing non-mutating tasks based on that state. But sometimes we need to perform "side effects" because of changes to our state, ie: mutating the DOM or making an API call because of user input. Vue provides a way to do this through the watch function.
 
-The watch() function "watches" a piece or pieces of state and triggers a callback function when that state changes. Watch functions accept three arguments. The first argument is the piece of state we are watching, typically a ref, a reactive object, an array of either, or sometimes a getter function that returns a specific property of a reactive state object.
+The `watch()` function "watches" a piece or pieces of state and triggers a callback function when that state changes. Watch functions accept three arguments. The first argument is the piece of state we are watching, typically a ref, a reactive object, an array of either, or sometimes a getter function that returns a specific property of a reactive state object.
 
 The second argument is a callback function, or the logic you want to run when a change in the watched state is observed. This callback function accepts three arguments: the new state value, the old state value, and a cleanup function.
 
 The third and optional argument is an options object that accepts several fields to help us further configure our watch function. If using a getter function to return a reactive object, the `{deep: true}` option can be set to watch all nested mutations. If you want your watch callback to execute immediately, you can set the `{immediate: true}` option. If you only want the callback to fire once when the source changes, you can use the `{once: true}` option.
 
-Let's turn to our app for an example. Let's add the ability to retrieve the next three books from our API. To do this we first import the "watch" function from 'vue'. Next, we'll have to add some reactive state to track the page number, in this case the API excepts a parameter of 'offset' for pagination, so this is what we'll name our state variable, and initialize it as 0. Then, we call the watch function and pass the offset as the first argument, and define the callback that will trigger when the offset changes. In this callback we simply make a call to the API with the updated query parameter of offset, using a template literal string so we can add the offset value dynamically, which gets passed to the callback in the form of 'newOffset'.
+Let's turn to our app for an example. Let's add the ability to retrieve the next three books from our API. To do this we first import the watch function from 'vue'. Next, we'll have to add some reactive state to track the page number, in this case the API excepts a parameter of 'offset' for pagination, so this is what we'll name our state variable, and initialize it as 0. Then, we call the watch function and pass the offset as the first argument, and define the callback that will trigger when the offset changes. In this callback we simply make a call to the API with the updated query parameter of offset, using a template literal string so we can add the offset value dynamically, which gets passed to the callback in the form of 'newOffset'.
 
 ```javascript
 <script setup>
@@ -66,22 +66,24 @@ Then in our template, let's create a next button using our component, and wire i
       <PlusIcon class="h-4 w-4" />
     </template>
   </BaseButton>
-  <div class="absolute right-5 top-5"><!--add this button -->
+  <!--add this button -->
     <BaseButton
         @handleClick="offset += 3"
-    class=""
+    class="absolute right-5 top-5"
     label="Next Page"
     mode="primary"
     type="button"
       >
   </BaseButton>
-</div>
+
 <!--rest of template-->
 </template >
 
 ```
 
 Now with our app running in the browser, we can see that when the state changes due to clicking the 'next page' button, this triggers our watcher callback and executes the call to our API, updating the state and what we see on the page.
+
+(Note: unfortunately without using global state management, adding our next page functionality breaks our Add A Book feature, as we can't persist the added book data through retrieving the next page of books. But this is just a tutorial, so the goal is to introduce you to as many concepts as possible, so just go with it!)
 
 Remember, whenever you need a 'side effect' to happen, using a watcher in Vue is the recommended way.
 

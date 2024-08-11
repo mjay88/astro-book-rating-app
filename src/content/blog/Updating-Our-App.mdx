@@ -4,6 +4,7 @@ chapter: Chapter 2
 description: 'Chapter 2 : Updating our App'
 pubDate: 2024-08-02T05:00:00.000Z
 tags:
+  - chapter 2
   - code
 title: 'Chapter 2: Updating Our App'
 ---
@@ -12,7 +13,7 @@ Time to apply what we’ve learned about components and lifecyle hooks to our ap
 
 ## Book Card Component
 
-Let’s start with the book card component. First, create a new file in our components folder,  name it Bookcard.vue, and add our \<script setup> and our \<template> tags to it. Then find the div in App.vue’s template where we have a v-for loop that iterates over our book ref, and copy and paste it into the template in BookCard.vue. Next, copy over all dependencies, this would be the imports and the methods used inside the loop.
+Let’s start with the book card component. First, create a new file in our components folder,  name it Bookcard.vue, and add our `<script setup>` and our `<template>` tags to it. Then find the div in App.vue’s template where we have a v-for loop that iterates over our book ref, and copy and paste it into the template in BookCard.vue. Next, copy over all dependencies, this would be the imports and the methods used inside the loop.
 
 ```javascript
 //BookCard.vue
@@ -105,7 +106,7 @@ const getImageSrc = (book) => {
 
 ```
 
-Now since we are only using the BookCard component in one other component - App.vue - we can import it locally, and replace the contents of the old loop with the \<BookCard/> app. I also updated the methods to use the book ID  instead of the book index to make them a bit less prone to bugs - I mapped over the data from the API to make this easier by giving each book an ID field as well.
+Now since we are only using the BookCard component in one other component - App.vue - we can import it locally, and replace the contents of the old loop with the \<BookCard/> app. I also updated the methods to use the book ID instead of the book index to make them a bit less prone to bugs - I mapped over the data from the API to make this easier by giving each book an ID field as well. Now find the div with our v-for loop and replace it with our `<BookCard>` component
 
 ```javascript
 //App.vue
@@ -119,6 +120,8 @@ const url =
 
 const books = ref([]);
 
+//methods for form validation...
+
 const getBooks = async () => {
 	try {
 		const response = await fetch(url);
@@ -127,7 +130,6 @@ const getBooks = async () => {
 		}
 		const data = await response.json();
 		books.value = mapBookKeys(data.works);
-		console.log(books.value);
 	} catch (error) {
 		console.error("Error fetching books:", error);
 	}
@@ -277,11 +279,12 @@ const closeModal = () => {
 
 ```
 
-Since we're only opening the ModalComponent when we want to add a new book, we can make this an async component in App.vue with defineAsyncComponent.
+Since we're only opening the ModalComponent when we want to add a new book, we can make this an async component in App.vue with defineAsyncComponent. Now find the `<TransitionRoot> `which wraps our modal and replace it and its entire contents with our `<AsyncModalComponent>`
 
 ```javascript
 //App.vue
 <script setup>
+import { ref, reactive, onBeforeMount, defineAsyncComponent } from "vue";//add defineAsyncComponent
 //other imports...
 
 const AsyncModalComponent = defineAsyncComponent(
@@ -535,7 +538,7 @@ const clearErrors = () => {
 </template >
 ```
 
-We can make this an async component as well in App.vue.
+We can make this an async component as well in App.vue. Now put `<AsyncFormComponent>` inside of the modals slot, and make sure to update handleFormSubmission too.
 
 ```javascript
 //App.vue
@@ -613,7 +616,6 @@ const getBooks = async () => {
 		}
 		const data = await response.json();
 		books.value = mapBookKeys(data.works);
-		console.log(books.value);
 	} catch (error) {
 		console.error("Error fetching books:", error);
 	}
@@ -701,6 +703,6 @@ If we compare this to our previous code, you can see how considerably shorter, m
 
 We went from 352 lines in App.vue to 106!
 
-We don’t have to worry about what's happening in BookCard.vue, we just have to loop over it and pass it the correct props for it to work. We don’t need to worry about the data the form is managing, because it will just send us the formData and then we can add it to our books ref. Each component has it’s own logic encapsulated inside of it’s respective file, abstracting all of the complexity away from App.vue.
+Now we don’t have to worry about what's happening in BookCard.vue, we just have to loop over it and pass it the correct props for it to work. We don’t need to worry about the data the form is managing, because it will just send us the formData and then we can add it to our books ref. Each component has it’s own logic encapsulated inside of it’s respective file, abstracting all of the complexity away from App.vue.
 
 Next up [watchers...](/post/watchers 'Watchers')

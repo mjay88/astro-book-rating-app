@@ -1,0 +1,88 @@
+---
+heroImage: /src/assets/images/vue-js-logo-1.jpg
+chapter: Chapter 5
+description: Cleaning up our app
+pubDate: 2024-08-10T05:00:00.000Z
+tags:
+  - composables
+  - chapter 5
+title: Cleaning Up Our App
+---
+
+Whenever we are building our apps, we should always have a focus on keeping our code DRY, modular, and reusable.  On HomePage.vue, we are using a fetch request inside of getBooks(), and essentially repeating the same code inside of our watch function.
+
+## Composables
+
+In Vue, we can take this logic that relies on state and the Composition API and encapsulate it into its own file, essentially a component with no \<tempate> or \<style> tag, known as a composable.
+
+In the updated version of our app, I have added a composable to replace the API call in HomePage.vue. It’s essentially all of the same logic, but modified to be more flexible:
+
+```javascript
+//src/composables/books.js
+import { ref, watch } from 'vue'
+
+export const useBooks = (url, offset) => {
+	const data = ref([])
+	const error = ref(null)
+	const isLoading = ref(null)
+	const fetchBooks = async () => {
+		isLoading.value = true
+
+		try {
+			const response = await fetch(url + offset.value)
+			if (!response.ok) {
+				throw new Error(`HTTP error! Status: ${response.status}`)
+			}
+			const responseData = await response.json()
+			data.value = mapBookKeys(responseData.works)
+			isLoading.value = false
+		} catch (err) {
+			console.error('Error fetching books:', err)
+			error.value = err
+			isLoading.value = false
+		}
+	}
+	watch(offset, fetchBooks)
+	fetchBooks()
+	return { isLoading, error, data }
+}
+
+//create a id field to sync incoming form data an API data, leave cover_id field because thats our we retrieve the cover images from api
+const mapBookKeys = (books) => {
+	return books.map((book) => {
+		return { ...book, id: book['cover_id'] }
+	})
+}
+```
+
+In a composable we can do essentially anything we can do inside of the \<script> tag. At the top we import ref and watch from vue. Then we export the declaration of our composable, useBooks. It is convention to name your composable starting with ‘use’ and in camelCase. Then we pass our composable function two arguments, the URL, and the offset, which if you remember is a ref we declare in HomePage.vue.
+
+Next we’ve declared data, error, and isLoading as new refs. Then we have our asynchronous fetchBooks function which will retrieve our data from our API. Below that, we have a watcher that watches our ref, and if it changes - which it does when we click the ‘Next Page’ button, our watcher will make sure our composable will trigger again. Finally after calling fetchBooks(), we return our data, error, and isLoading refs as an object.
+
+Now back in HomePage.vue, we can import our useBooks composable, and use it to get our initial data, and the loading state, and the error - if there is one - and use that information in our template to improve the UX. We also cleaned up all of our repeated code, with one line: that updates and watches our state:
+
+```javascript
+const { data: books, isLoading, error } = useBooks(url, offset)
+```
+
+## Custom Transition
+
+Transitions can be reused as well. Here, I’ve taken our transition that we had in BookCard.vue and put it into it’s own template that wraps the \<Transition> and accepts content through a slot , which I then re-use in BookDetails.vue and BookLoadingSkeleton.vue:
+
+```javascript
+<template>
+	<Transition
+		appear
+		enter-active-class='transition-opacity duration-1000 transition-transform duration-1000'
+		leave-active-class='transition-opacity duration-1000 transition-transform duration-1000'
+		enter-from-class='opacity-0 -translate-x-3'
+		leave-to-class='opacity-0 -translate-x-3'
+	>
+		<slot></slot>
+	</Transition>
+</template>
+```
+
+I've also added an ErrorComponet.vue and a BookLoadingSkeleton.vue component, which are pretty basic, but use the state we are getting from our composable to improve the UX.
+
+And that concludes this tutorial on Vue js! You can find the completed code in github [here](https://github.com/mjay88/vue-book-rating-app 'Completed App in github').

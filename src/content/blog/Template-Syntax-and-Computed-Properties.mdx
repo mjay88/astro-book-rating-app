@@ -1,25 +1,40 @@
 ---
 heroImage: /src/assets/images/vue-js-logo-1.jpg
 chapter: Chapter 1
-description: A quick introduction to Template Syntax and Computed Properties
+description: A quick introduction to Template Syntax
 pubDate: 2024-07-26T05:00:00.000Z
 tags:
-  - computed properties
+  - template syntax
+  - chapter 1
   - basics
-title: Template Syntax and Computed Properties
+title: Template Syntax
 ---
 
 ## Template Syntax
 
 Vue allows you to bind an HTML-based scaffolding to the state declared in your \<script setup> tag. Vue then uses its core reactivity to only update and re-render the parts of your app it needs to when your state changes.
 
+## Data Binding
+
 Binding data from your component instance to your UI is quite simple: using the double curly braces syntax, we can render any reactive state we have declared to the screen. Vue binding supports property keys as well as JavaScript expressions, including ternary expressions, mathematical evaluations, and the return value of any methods exposed in your component.
 
-add code example from app here for template syntax
+```javascript
+<body>
+  <header>
+    <h1>Vue Template Syntax</h1>
+  </header>
+  <section id="app">
+    <h2>Add A Message</h2>
+    <input type="text" ref="userText" />
+    <button @click="setText">Set Text</button>
+  <p>{{ message }}</p>
+</section>
+	</body >
+```
 
 ## Directives
 
-You can also bind data dynamically to HTML elements using the v-bind directive. Vue directives are attributes prefixed with v-. A directive helps Vue to dynamically update the DOM when the value or expression passed to it changes.  v-if is a directive commonly used to render an element conditionally.
+You can also bind data dynamically to HTML elements using the v-bind directive. Vue directives are attributes prefixed with `v-`. A directive helps Vue to dynamically update the DOM when the value or expression passed to it changes.  `v-if` is a directive commonly used to render an element conditionally.
 
 ```javascript
 <p v-if='2 + 2 > 0'> Greater than zero</p>
@@ -27,19 +42,19 @@ You can also bind data dynamically to HTML elements using the v-bind directive. 
 
 If we had an expression that resulted in a falsy value, say 2 + 2 > 5, the element would not be included in the DOM.
 
-Some directives accept an argument, which is passed by using a colon after the directive name. Here, the v-bind directive is used to reactively update the source of an img element:
+Some directives accept an argument, passed by using a colon after the directive name. Here, the v-bind directive is used to update the source of an img element reactively:
 
 ```javascript
 <img v-bind:src='imageSrc' />
 ```
 
-Using v-bind tells Vue to keep the element’s src attribute in sync with the imageSrc property coming from your state. The short-hand syntax for v-bind is a little cleaner, and accepted as common usage:
+Using `v-bind` tells Vue to keep the element’s src attribute in sync with the imageSrc property coming from your state. The short-hand syntax for v-bind is a little cleaner, and accepted as common usage:
 
 ```javascript
 <img :src="imageSrc" />
 ```
 
-Another common directive is v-on, which is used to handle dom events. Since v-on is so common, it has its own dedicated shorthand syntax, the @ symbol is the same as v-on:
+`v-on` is another common directive and is used to handle dom events. Since `v-on` is so common, it has a dedicated shorthand syntax, the `@`symbol:
 
 ```javascript
 const count = ref(0)
@@ -48,7 +63,7 @@ const count = ref(0)
 <button @click="count++">Add 1</button>
 ```
 
-The v-for is a directive used for rendering an element multiple times typically used to render lists:
+`v-for` is another directive used for rendering an element multiple times, typically used to render lists:
 
 ```javascript
 <ul>
@@ -61,11 +76,11 @@ Pro tip: If the attribute has the same name as the value it is being bound to, t
 
 ```javascript
 const book = {
-  id: "1FGJLDNOL",
+  key: "1FGJLDNOL",
   title: "Animal Farm"
 }
-const { id } = book;
-<div :id>{{book.title}}</div>
+const { key } = book;
+<div :key>{{book.title}}</div>
 ```
 
 Attributes can also be bound to boolean values.
@@ -73,7 +88,7 @@ Attributes can also be bound to boolean values.
 ```javascript
 const isButtonDisabled = ref(true)
 
-< button :disabled = "isButtonDisabled" >Click Me</button>
+< button :disabled="isButtonDisabled">Click Me</button>
 
 ```
 
@@ -85,41 +100,7 @@ const attributes = {
   isDisabled: true
 }
 
-<button v-bind="objectOfAttrs">Click Me</button>
+<button v-bind="attribues">Click Me</button>
 ```
 
-## Computed Properties
-
-Using expressions directly in our template is very easy, but a good practice is to keep these expressions limited to simple operations. If you have complex logic that includes reactive state, it is best to use a computed property. A computed property allows us to read and perform calculations on our state:
-
-```javascript
-<script setup>
-import { reactive, computed } from 'vue'
-
-const author = reactive({
-  name: 'Agitha Christie',
-  bestSellingbooks: [
-    'And Then There Were None',
-    'Murder on the Orient Express',
-    'A murder at the Vicarage'
-  ]
-})
-
-// a computed ref
-const herBestBooks = computed(() => {
-  return author.bestSellingBooks.length
-})
-</script>
-
-<template>
-  <p>{{author.name}} has {{herBestBooks}} considered as her best selling books.</p>
-</template>
-```
-
-In this example, we import computed and then assign a computed ref to an invocation of the computed function, which expects a getter function, and the returned value can then be used as our computed ref. If used in the \<script setup> tag, you can access the value of the computed property just like a normal ref, using the .value notation, and similarly, computed refs are unwrapped for us when we use them in the template.
-
-Another feature of computed refs is that they automatically track the changes to any reactive data that they depend on. In the example above, if we updated our bestSellingBooks array, the computed ref would automatically re-calculate to show this update, using Vue’s reactivity to stay in sync with our state. Computed refs are cached based on their reactive dependencies. This means that our expression will not re-evaluate unless the reactive data used inside of it has changed, cutting down on unnecessary computational overhead.
-
-Computed properties should be free of side effects such as mutating state, making async requests, or updating and changing the DOM. Its only job should be reading, computing, and returning derived state, and is not for changing or updating state.
-
-Next lesson: [Event Handling and Form Input Binding](/post/event-handling-and-form-input-binding 'Event Handling and Form Input Binding')
+Next lesson: [Computed Properties](/post/computed-properties 'Computed Properties')
